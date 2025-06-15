@@ -82,4 +82,30 @@ def simulate_match(home: Team, away: Team) -> MatchResult:
     assign_goals_and_assists(home, home_goals)
     assign_goals_and_assists(away, away_goals)
 
+    # Goalie stats
+    def update_goalie_stats(team: Team, goals_allowed: int, opponent_attack_strength: int):
+        goalies = [p for p in team.players if p.position == "Goalie"]
+        if not goalies:
+            return
+        goalie = goalies[0]  # assume one goalie
+        estimated_shots_faced = int(opponent_attack_strength / 10 * random.uniform(0.8, 1.2))
+        goalie.saves += max(0, estimated_shots_faced - goals_allowed)
+
+    update_goalie_stats(home, away_goals, away_offense)
+    update_goalie_stats(away, home_goals, home_offense)
+
+        # Player of the match (based on goals, assists, saves)
+    candidates = home.players + away.players
+    scores = []
+    for p in candidates:
+        score = p.goals * 4 + p.assists * 3
+        if p.position == "Goalie":
+            score += p.saves * 0.5
+        scores.append(score)
+
+    max_score = max(scores)
+    top_players = [p for p, s in zip(candidates, scores) if s == max_score]
+    selected = random.choice(top_players)
+    selected.player_of_match += 1
+
     return MatchResult(home, away, home_goals, away_goals)
