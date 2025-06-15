@@ -10,9 +10,6 @@ class MatchResult:
     away_score: int
 
 def weighted_choice(players, weights):
-    """
-    Choose one player from players list based on weights list.
-    """
     total = sum(weights)
     r = random.uniform(0, total)
     upto = 0
@@ -20,7 +17,7 @@ def weighted_choice(players, weights):
         if upto + weight >= r:
             return player
         upto += weight
-    return players[-1]  # fallback
+    return players[-1]
 
 def simulate_match(home: Team, away: Team) -> MatchResult:
     def team_offense(team: Team) -> int:
@@ -37,7 +34,6 @@ def simulate_match(home: Team, away: Team) -> MatchResult:
     home_goals = max(0, int((home_offense / (away_defense + 1)) * random.uniform(0.5, 1.5)))
     away_goals = max(0, int((away_offense / (home_defense + 1)) * random.uniform(0.5, 1.5)))
 
-    # Update team stats
     home.goals_for += home_goals
     home.goals_against += away_goals
     away.goals_for += away_goals
@@ -74,7 +70,6 @@ def simulate_match(home: Team, away: Team) -> MatchResult:
 
         for _ in range(goals):
             scorer = weighted_choice(eligible_players, scorer_weights)
-
             assister_candidates = [p for p in eligible_players if p != scorer]
             assister_weights_candidates = [assister_weights[eligible_players.index(p)] for p in assister_candidates]
 
