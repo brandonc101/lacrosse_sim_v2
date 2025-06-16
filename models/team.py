@@ -9,15 +9,18 @@ class Team:
         # Team record stats
         self.wins = 0
         self.losses = 0
-        self.draws = 0
+        self.overtime_losses = 0  # New stat
 
         self.goals_for = 0
         self.goals_against = 0
+        
+    def points(self) -> int:
+        return self.wins * 2 + self.overtime_losses
 
     def reset_stats(self):
         self.wins = 0
         self.losses = 0
-        self.draws = 0
+        self.overtime_losses = 0
         self.goals_for = 0
         self.goals_against = 0
         for player in self.players:

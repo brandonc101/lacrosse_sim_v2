@@ -5,7 +5,8 @@ from models.team import Team
 
 class MatchResult:
     def __init__(self, home_team: Team, away_team: Team, home_score: int, away_score: int,
-                 home_shots: int, away_shots: int, home_saves: int, away_saves: int):
+                 home_shots: int, away_shots: int, home_saves: int, away_saves: int,
+                 overtime: bool = False):
         self.home_team = home_team
         self.away_team = away_team
         self.home_score = home_score
@@ -14,6 +15,7 @@ class MatchResult:
         self.away_shots = away_shots
         self.home_saves = home_saves
         self.away_saves = away_saves
+        self.overtime = overtime
 
 def weighted_random_player(players: List[Player], roles: List[str]) -> Player:
     candidates = [p for p in players if p.position in roles]
@@ -135,14 +137,48 @@ def simulate_match(home_team: Team, away_team: Team) -> MatchResult:
     away_team.goals_for += away_goals
     away_team.goals_against += home_goals
 
-    if home_goals > away_goals:
-        home_team.wins += 1
-        away_team.losses += 1
-    elif away_goals > home_goals:
-        away_team.wins += 1
-        home_team.losses += 1
-    else:
-        home_team.draws += 1
-        away_team.draws += 1
+    overtime = False
 
-    return MatchResult(home_team, away_team, home_goals, away_goals, home_shots, away_shots, home_saves, away_saves)
+    if home_goals == away_goals:
+        # Overtime simulation - sudden death until winner scores
+        overtime = True
+        while True:
+            for offense_team, defense_team in [(home_team, away_team), (away_team, home_team)]:
+                if random.random() < 0.5:  # 50% chance to get shot in OT
+                    scorer = weighted_random_player(offense_team.players, ["Attacker", "Midfielder"])
+                    ot_accuracy = team_shooting_accuracy(offense_team) * 0.8  # slightly lower accuracy in OT
+                    if random.random() < ot_accuracy:
+                        if offense_team == home_team:
+                            home_goals += 1
+                        else:
+                            away_goals += 1
+                        scorer.goals += 1
+                        scorer.goals_match += 1
+                        # Winner is offense_team, loser is defense_team
+                        if offense_team == home_team:
+                            home_team.wins += 1
+                            away_team.overtime_losses += 1
+                        else:
+                            away_team.wins += 1
+                            home_team.overtime_losses += 1
+
+                        # Update points based on new rules
+                        home_team.points = (home_team.wins * 2) + (home_team.overtime_losses * 1)
+                        away_team.points = (away_team.wins * 2) + (away_team.overtime_losses * 1)
+                        return MatchResult(home_team, away_team, home_goals, away_goals,
+                                           home_shots, away_shots, home_saves, away_saves, overtime)
+
+    # No OT, determine win/loss normally
+    if not overtime:
+        if home_goals > away_goals:
+            home_team.wins += 1
+            away_team.losses += 1
+        elif away_goals > home_goals:
+            away_team.wins += 1
+            home_team.losses += 1
+
+    # Update points for non-OT games
+    home_team.points = (home_team.wins * 2) + (home_team.overtime_losses * 1)
+    away_team.points = (away_team.wins * 2) + (away_team.overtime_losses * 1)
+
+    return MatchResult(home_team, away_team, home_goals, away_goals, home_shots, away_shots, home_saves, away_saves, overtime)

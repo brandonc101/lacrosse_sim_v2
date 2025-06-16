@@ -29,9 +29,10 @@ def simulate_season(schedule: List[List[tuple]], teams: List[team]) -> None:
         print()
 
     print("=== Final Standings ===")
-    standings = sorted(teams, key=lambda t: (t.wins * 3 + t.draws, t.goals_for - t.goals_against), reverse=True)
+    standings = sorted(teams, key=lambda t: (t.points, t.goals_for - t.goals_against), reverse=True)
+    print(f"{'Pos':<3} {'Team':<20} {'W':<3} {'OTL':<4} {'L':<3} {'GF':<4} {'GA':<4} {'Pts':<4}")
     for i, team in enumerate(standings, 1):
-        print(f"{i}. {team.name} W:{team.wins} D:{team.draws} L:{team.losses} GF:{team.goals_for} GA:{team.goals_against}")
+        print(f"{i:<3} {team.name:<20} {team.wins:<3} {team.overtime_losses:<4} {team.losses:<3} {team.goals_for:<4} {team.goals_against:<4} {team.points:<4}")
 
     # === Post-Season Stats ===
     print("\n=== Player Stats ===")
