@@ -51,10 +51,22 @@ def simulate_season(schedule: List[List[tuple]], teams: List[team]) -> None:
     # === Export to CSV ===
     export_player_stats_csv(all_players, teams)
 
-    # === MVP Top 10 ===
-    all_players.sort(key=lambda p: (p.goals * 4 + p.assists * 3 + p.saves * 0.5 + p.player_of_match * 5), reverse=True)
-    print("\n=== Top 10 Players (MVP Candidates) ===")
-    for i, player in enumerate(all_players[:10], 1):
+    # === MVP Top 10 (Excluding Goalies) ===
+    non_goalie_players = [p for p in all_players if p.position != "Goalie"]
+    non_goalie_players.sort(key=lambda p: (p.goals * 4 + p.assists * 3 + p.saves * 0.5 + p.player_of_match * 5), reverse=True)
+
+    print("\n=== Top 10 Players (MVP Candidates - Non-Goalies) ===")
+    for i, player in enumerate(non_goalie_players[:10], 1):
+        team_name = next((team.name for team in teams if player in team.players), "Unknown")
+        score = player.goals * 4 + player.assists * 3 + player.saves * 0.5 + player.player_of_match * 5
+        print(f"{i}. {player.name} ({team_name}) - {score:.1f} pts [G:{player.goals}, A:{player.assists}, Sv:{player.saves}, POM:{player.player_of_match}]")
+
+    # === MVP Top 5 Goalies ===
+    goalies = [p for p in all_players if p.position == "Goalie"]
+    goalies.sort(key=lambda p: (p.goals * 4 + p.assists * 3 + p.saves * 0.5 + p.player_of_match * 5), reverse=True)
+
+    print("\n=== Top 5 Goalies (MVP Candidates) ===")
+    for i, player in enumerate(goalies[:5], 1):
         team_name = next((team.name for team in teams if player in team.players), "Unknown")
         score = player.goals * 4 + player.assists * 3 + player.saves * 0.5 + player.player_of_match * 5
         print(f"{i}. {player.name} ({team_name}) - {score:.1f} pts [G:{player.goals}, A:{player.assists}, Sv:{player.saves}, POM:{player.player_of_match}]")
@@ -64,17 +76,28 @@ def simulate_season(schedule: List[List[tuple]], teams: List[team]) -> None:
     for week in sorted(weekly_leaders.keys()):
         print(f"\nWeek {week}:")
         week_scores = sorted(weekly_leaders[week], key=lambda x: x[1], reverse=True)
-        shown = set()
-        count = 0
+
+        non_goalies_shown = 0
+        goalies_shown = 0
+        shown_names = set()
+
         for player, score in week_scores:
-            if player.name in shown:
+            if player.name in shown_names:
                 continue
             team_name = next((team.name for team in teams if player in team.players), "Unknown")
-            print(f" - {player.name} ({team_name}) | Score: {score:.1f} [G:{player.goals}, A:{player.assists}, Sv:{player.saves}]")
-            shown.add(player.name)
-            count += 1
-            if count >= 3:
+
+            if player.position == "Goalie" and goalies_shown < 3:
+                print(f" - {player.name} ({team_name}) | Score: {score:.1f} [G:{player.goals}, A:{player.assists}, Sv:{player.saves}] (Goalie)")
+                goalies_shown += 1
+                shown_names.add(player.name)
+            elif player.position != "Goalie" and non_goalies_shown < 3:
+                print(f" - {player.name} ({team_name}) | Score: {score:.1f} [G:{player.goals}, A:{player.assists}, Sv:{player.saves}]")
+                non_goalies_shown += 1
+                shown_names.add(player.name)
+
+            if non_goalies_shown >= 3 and goalies_shown >= 3:
                 break
+
 
 
 def export_player_stats_csv(players: List[player], teams: List[team], filename="player_stats.csv"):
