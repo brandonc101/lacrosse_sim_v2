@@ -1,15 +1,28 @@
-from dataclasses import dataclass, field
 from typing import List
-from .player import Player
+from models.player import Player
 
-@dataclass
 class Team:
-    name: str
-    players: List[Player] = field(default_factory=list)
+    def __init__(self, name: str, players: List[Player]):
+        self.name = name
+        self.players = players
 
-    # Team season stats
-    wins: int = 0
-    losses: int = 0
-    draws: int = 0
-    goals_for: int = 0
-    goals_against: int = 0
+        # Team record stats
+        self.wins = 0
+        self.losses = 0
+        self.draws = 0
+
+        self.goals_for = 0
+        self.goals_against = 0
+
+    def reset_stats(self):
+        self.wins = 0
+        self.losses = 0
+        self.draws = 0
+        self.goals_for = 0
+        self.goals_against = 0
+        for player in self.players:
+            player.goals = 0
+            player.assists = 0
+            player.saves = 0
+            player.player_of_match = 0
+            player.reset_match_stats()

@@ -1,111 +1,136 @@
-from dataclasses import dataclass
-from .team import Team
 import random
+from typing import List
+from models.player import Player
+from models.team import Team
 
-@dataclass
 class MatchResult:
-    home_team: Team
-    away_team: Team
-    home_score: int
-    away_score: int
+    def __init__(self, home_team: Team, away_team: Team, home_score: int, away_score: int,
+                 home_shots: int, away_shots: int, home_saves: int, away_saves: int):
+        self.home_team = home_team
+        self.away_team = away_team
+        self.home_score = home_score
+        self.away_score = away_score
+        self.home_shots = home_shots
+        self.away_shots = away_shots
+        self.home_saves = home_saves
+        self.away_saves = away_saves
 
-def weighted_choice(players, weights):
-    total = sum(weights)
-    r = random.uniform(0, total)
+def weighted_random_player(players: List[Player], roles: List[str]) -> Player:
+    candidates = [p for p in players if p.position in roles]
+    if not candidates:
+        candidates = players
+    weights = [p.shooting * (p.stamina / 100) for p in candidates]
+    total_weight = sum(weights)
+    if total_weight == 0:
+        return random.choice(candidates)
+    rnd = random.uniform(0, total_weight)
     upto = 0
-    for player, weight in zip(players, weights):
-        if upto + weight >= r:
-            return player
-        upto += weight
-    return players[-1]
+    for p, w in zip(candidates, weights):
+        if upto + w >= rnd:
+            return p
+        upto += w
+    return candidates[-1]
 
-def simulate_match(home: Team, away: Team) -> MatchResult:
-    def team_offense(team: Team) -> int:
-        return sum(p.shooting + p.passing for p in team.players if p.position in ['Attack', 'Midfield'])
+def weighted_random_assister(players: List[Player], exclude_player: Player) -> Player:
+    candidates = [p for p in players if p != exclude_player and p.position in ("Attacker", "Midfielder", "Defenseman")]
+    if not candidates:
+        candidates = [p for p in players if p != exclude_player]
+    weights = [p.passing * (p.stamina / 100) for p in candidates]
+    total_weight = sum(weights)
+    if total_weight == 0:
+        return random.choice(candidates)
+    rnd = random.uniform(0, total_weight)
+    upto = 0
+    for p, w in zip(candidates, weights):
+        if upto + w >= rnd:
+            return p
+        upto += w
+    return candidates[-1]
 
-    def team_defense(team: Team) -> int:
-        return sum(p.defense + p.stamina for p in team.players if p.position in ['Defense', 'Goalie'])
+def team_shooting_accuracy(team: Team) -> float:
+    shooters = [p for p in team.players if p.position in ("Attacker", "Midfielder")]
+    avg_shooting = sum(p.shooting for p in shooters) / max(len(shooters), 1)
+    defenders = [p for p in team.players if p.position == "Defenseman"]
+    avg_defense = sum(p.defense for p in defenders) / max(len(defenders), 1)
+    base_accuracy = 0.28
+    accuracy = base_accuracy * (avg_shooting / 100) * (1.0 - avg_defense / 150)
+    return max(0.15, min(accuracy, 0.40))
 
-    home_offense = team_offense(home)
-    away_offense = team_offense(away)
-    home_defense = team_defense(home)
-    away_defense = team_defense(away)
+def simulate_match(home_team: Team, away_team: Team) -> MatchResult:
+    avg_shots = 43
+    home_shots = max(30, int(random.gauss(avg_shots, 5)))
+    away_shots = max(30, int(random.gauss(avg_shots, 5)))
 
-    home_goals = max(0, int((home_offense / (away_defense + 1)) * random.uniform(0.5, 1.5)))
-    away_goals = max(0, int((away_offense / (home_defense + 1)) * random.uniform(0.5, 1.5)))
+    home_accuracy = team_shooting_accuracy(home_team)
+    away_accuracy = team_shooting_accuracy(away_team)
 
-    home.goals_for += home_goals
-    home.goals_against += away_goals
-    away.goals_for += away_goals
-    away.goals_against += home_goals
+    home_goals = 0
+    away_goals = 0
 
-    if home_goals > away_goals:
-        home.wins += 1
-        away.losses += 1
-    elif away_goals > home_goals:
-        away.wins += 1
-        home.losses += 1
-    else:
-        home.draws += 1
-        away.draws += 1
+    # Reset match stats for players before the match starts
+    for player in home_team.players + away_team.players:
+        player.goals_match = 0
+        player.assists_match = 0
+        player.saves_match = 0
 
-    def assign_goals_and_assists(team: Team, goals: int):
-        eligible_players = [p for p in team.players if p.position in ['Attack', 'Midfield']]
-        if not eligible_players:
-            return
-
-        scorer_weights = []
-        for p in eligible_players:
-            base_weight = (p.shooting * 0.7 + p.passing * 0.3)
-            if p.position == 'Attack':
-                base_weight *= 1.2
-            scorer_weights.append(base_weight)
-
-        assister_weights = []
-        for p in eligible_players:
-            base_weight = (p.passing * 0.6 + p.stamina * 0.4)
-            if p.position == 'Midfield':
-                base_weight *= 1.2
-            assister_weights.append(base_weight)
-
-        for _ in range(goals):
-            scorer = weighted_choice(eligible_players, scorer_weights)
-            assister_candidates = [p for p in eligible_players if p != scorer]
-            assister_weights_candidates = [assister_weights[eligible_players.index(p)] for p in assister_candidates]
-
-            assister = weighted_choice(assister_candidates, assister_weights_candidates) if assister_candidates else None
-
+    for _ in range(home_shots):
+        if random.random() < home_accuracy:
+            home_goals += 1
+            scorer = weighted_random_player(home_team.players, ["Attacker", "Midfielder"])
             scorer.goals += 1
+            scorer.goals_match += 1
+            assister = weighted_random_assister(home_team.players, scorer)
             if assister:
                 assister.assists += 1
+                assister.assists_match += 1
 
-    assign_goals_and_assists(home, home_goals)
-    assign_goals_and_assists(away, away_goals)
+    for _ in range(away_shots):
+        if random.random() < away_accuracy:
+            away_goals += 1
+            scorer = weighted_random_player(away_team.players, ["Attacker", "Midfielder"])
+            scorer.goals += 1
+            scorer.goals_match += 1
+            assister = weighted_random_assister(away_team.players, scorer)
+            if assister:
+                assister.assists += 1
+                assister.assists_match += 1
 
-    # Goalie stats
-    def update_goalie_stats(team: Team, goals_allowed: int, opponent_attack_strength: int):
+    home_saves = home_shots - home_goals
+    away_saves = away_shots - away_goals
+
+    def assign_saves(team: Team, saves: int):
         goalies = [p for p in team.players if p.position == "Goalie"]
         if not goalies:
             return
-        goalie = goalies[0]  # assume one goalie
-        estimated_shots_faced = int(opponent_attack_strength / 10 * random.uniform(0.8, 1.2))
-        goalie.saves += max(0, estimated_shots_faced - goals_allowed)
+        weights = [p.defense * (p.stamina / 100) for p in goalies]
+        total = sum(weights)
+        if total == 0:
+            equal_save = saves // len(goalies)
+            for p in goalies:
+                p.saves += equal_save
+                p.saves_match += equal_save
+            return
+        for p, w in zip(goalies, weights):
+            assigned = int(saves * (w / total))
+            p.saves += assigned
+            p.saves_match += assigned
 
-    update_goalie_stats(home, away_goals, away_offense)
-    update_goalie_stats(away, home_goals, home_offense)
+    assign_saves(home_team, home_saves)
+    assign_saves(away_team, away_saves)
 
-        # Player of the match (based on goals, assists, saves)
-    candidates = home.players + away.players
-    scores = []
-    for p in candidates:
-        score = p.goals * 4 + p.assists * 3
-        if p.position == "Goalie":
-            score += p.saves * 0.5
-        scores.append(score)
+    home_team.goals_for += home_goals
+    home_team.goals_against += away_goals
+    away_team.goals_for += away_goals
+    away_team.goals_against += home_goals
 
-    max_score = max(scores)
-    top_players = [p for p, s in zip(candidates, scores) if s == max_score]
-    selected = random.choice(top_players)
-    selected.player_of_match += 1
+    if home_goals > away_goals:
+        home_team.wins += 1
+        away_team.losses += 1
+    elif away_goals > home_goals:
+        away_team.wins += 1
+        home_team.losses += 1
+    else:
+        home_team.draws += 1
+        away_team.draws += 1
 
-    return MatchResult(home, away, home_goals, away_goals)
+    return MatchResult(home_team, away_team, home_goals, away_goals, home_shots, away_shots, home_saves, away_saves)

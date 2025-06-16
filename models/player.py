@@ -1,16 +1,26 @@
-from dataclasses import dataclass
-
-@dataclass
 class Player:
-    name: str
-    position: str  # 'Attack', 'Midfield', 'Defense', 'Goalie'
-    shooting: int
-    passing: int
-    defense: int
-    stamina: int
+    def __init__(self, name: str, position: str,
+                 shooting: int, passing: int, defense: int, stamina: int):
+        self.name = name
+        self.position = position  # e.g., "Attacker", "Midfielder", "Defenseman", "Goalie"
 
-    # Match stats
-    goals: int = 0
-    assists: int = 0
-    saves: int = 0            # NEW: for goalies
-    player_of_match: int = 0  # NEW: track how many times selected
+        self.shooting = shooting
+        self.passing = passing
+        self.defense = defense
+        self.stamina = stamina
+
+        # Cumulative season stats
+        self.goals = 0
+        self.assists = 0
+        self.saves = 0
+        self.player_of_match = 0
+
+        # Per-match stats (reset before each match)
+        self.goals_match = 0
+        self.assists_match = 0
+        self.saves_match = 0
+
+    def reset_match_stats(self):
+        self.goals_match = 0
+        self.assists_match = 0
+        self.saves_match = 0
