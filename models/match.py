@@ -18,8 +18,15 @@ class MatchResult:
 def weighted_random_player(players: List[Player], roles: List[str]) -> Player:
     candidates = [p for p in players if p.position in roles]
     if not candidates:
-        candidates = players
-    weights = [p.shooting * (p.stamina / 100) for p in candidates]
+        candidates = players[:]
+    weights = []
+    for p in candidates:
+        base_weight = p.shooting * (p.stamina / 100)
+        # Apply big penalty if goalie, e.g. multiply by 0.05 (5% chance relative to others)
+        if p.position == "Goalie":
+            base_weight *= 0.05
+        weights.append(base_weight)
+
     total_weight = sum(weights)
     if total_weight == 0:
         return random.choice(candidates)
@@ -32,10 +39,15 @@ def weighted_random_player(players: List[Player], roles: List[str]) -> Player:
     return candidates[-1]
 
 def weighted_random_assister(players: List[Player], exclude_player: Player) -> Player:
-    candidates = [p for p in players if p != exclude_player and p.position in ("Attacker", "Midfielder", "Defenseman")]
-    if not candidates:
-        candidates = [p for p in players if p != exclude_player]
-    weights = [p.passing * (p.stamina / 100) for p in candidates]
+    # Allow all but exclude the shooter
+    candidates = [p for p in players if p != exclude_player]
+    weights = []
+    for p in candidates:
+        base_weight = p.passing * (p.stamina / 100)
+        if p.position == "Goalie":
+            base_weight *= 0.05  # 5% chance to assist relative to others
+        weights.append(base_weight)
+
     total_weight = sum(weights)
     if total_weight == 0:
         return random.choice(candidates)
