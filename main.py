@@ -1,6 +1,6 @@
 from models.player import Player
 from models.team import Team
-from schedule import generate_schedule
+from game_schedule import generate_schedule
 from season import simulate_season
 
 # Define teams and divisions
