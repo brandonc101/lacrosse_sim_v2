@@ -62,9 +62,9 @@ def weighted_random_assister(players: List[Player], exclude_player: Player) -> P
     return candidates[-1]
 
 def team_shooting_accuracy(team: Team) -> float:
-    shooters = [p for p in team.players if p.position in ("Attacker", "Midfielder")]
+    shooters = [p for p in team.players if p.position in ("Attack", "Midfield")]
     avg_shooting = sum(p.shooting for p in shooters) / max(len(shooters), 1)
-    defenders = [p for p in team.players if p.position == "Defenseman"]
+    defenders = [p for p in team.players if p.position == "Defense"]
     avg_defense = sum(p.defense for p in defenders) / max(len(defenders), 1)
     base_accuracy = 0.28
     accuracy = base_accuracy * (avg_shooting / 100) * (1.0 - avg_defense / 150)
@@ -90,7 +90,7 @@ def simulate_match(home_team: Team, away_team: Team) -> MatchResult:
     for _ in range(home_shots):
         if random.random() < home_accuracy:
             home_goals += 1
-            scorer = weighted_random_player(home_team.players, ["Attacker", "Midfielder"])
+            scorer = weighted_random_player(home_team.players, ["Attack", "Midfield"])
             scorer.goals += 1
             scorer.goals_match += 1
             assister = weighted_random_assister(home_team.players, scorer)
@@ -101,7 +101,7 @@ def simulate_match(home_team: Team, away_team: Team) -> MatchResult:
     for _ in range(away_shots):
         if random.random() < away_accuracy:
             away_goals += 1
-            scorer = weighted_random_player(away_team.players, ["Attacker", "Midfielder"])
+            scorer = weighted_random_player(away_team.players, ["Attack", "Midfield"])
             scorer.goals += 1
             scorer.goals_match += 1
             assister = weighted_random_assister(away_team.players, scorer)
@@ -145,7 +145,7 @@ def simulate_match(home_team: Team, away_team: Team) -> MatchResult:
         while True:
             for offense_team, defense_team in [(home_team, away_team), (away_team, home_team)]:
                 if random.random() < 0.5:  # 50% chance to get shot in OT
-                    scorer = weighted_random_player(offense_team.players, ["Attacker", "Midfielder"])
+                    scorer = weighted_random_player(offense_team.players, ["Attack", "Midfield"])
                     ot_accuracy = team_shooting_accuracy(offense_team) * 0.8  # slightly lower accuracy in OT
                     if random.random() < ot_accuracy:
                         if offense_team == home_team:
