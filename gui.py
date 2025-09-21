@@ -8,6 +8,7 @@ import os
 from models.player import Player
 from models.team import Team
 from game_schedule import generate_schedule
+from lacrosse_names import get_player_name_for_team, initialize_rosters_for_teams
 
 # Import season module
 try:
@@ -47,12 +48,20 @@ class LacrosseSimGUI:
         self.initialize_game()
 
     def create_players(self, team_name):
-        """Create players using your existing logic"""
+        """Create players using realistic names from the roster manager"""
         players = []
         positions = ['Attack', 'Attack', 'Attack', 'Midfield', 'Midfield', 'Midfield', 'Defense', 'Defense', 'Defense', 'Goalie']
+
+        # Track position counts for getting the right player name
+        position_counts = {'Attack': 0, 'Midfield': 0, 'Defense': 0, 'Goalie': 0}
+
         for i, pos in enumerate(positions):
+            # Get realistic name for this player
+            player_name = get_player_name_for_team(team_name, pos, position_counts[pos])
+            position_counts[pos] += 1
+
             players.append(Player(
-                name=f"{team_name} Player{i+1}",
+                name=player_name,  # Now uses realistic names!
                 position=pos,
                 shooting=70 + (i * 2) % 30,
                 passing=65 + (i * 3) % 25,
@@ -267,6 +276,9 @@ class LacrosseSimGUI:
 
     def initialize_game(self):
         """Initialize the game using your existing logic"""
+        # Initialize the player name system for your teams
+        initialize_rosters_for_teams(self.teams_names)
+
         # Create Team objects with players using your existing logic
         self.teams = []
         for name in self.teams_names:
