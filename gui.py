@@ -3,12 +3,13 @@ from tkinter import ttk, messagebox, scrolledtext
 import json
 from datetime import datetime
 import os
+import random
 
 # Import your existing modules
 from models.player import Player
 from models.team import Team
 from game_schedule import generate_schedule
-from lacrosse_names import get_player_name_for_team, initialize_rosters_for_teams
+from lacrosse_names import get_player_name_for_team, initialize_rosters_for_teams, roster_manager
 
 # Import season module
 try:
@@ -48,26 +49,68 @@ class LacrosseSimGUI:
         self.initialize_game()
 
     def create_players(self, team_name):
-        """Create players using realistic names from the roster manager"""
+        """Create 25 players using realistic names from the roster manager"""
         players = []
-        positions = ['Attack', 'Attack', 'Attack', 'Midfield', 'Midfield', 'Midfield', 'Defense', 'Defense', 'Defense', 'Goalie']
 
-        # Track position counts for getting the right player name
-        position_counts = {'Attack': 0, 'Midfield': 0, 'Defense': 0, 'Goalie': 0}
+        # Get the full roster from the name system (25 players)
+        roster_data = roster_manager.get_team_roster(team_name)
 
-        for i, pos in enumerate(positions):
-            # Get realistic name for this player
-            player_name = get_player_name_for_team(team_name, pos, position_counts[pos])
-            position_counts[pos] += 1
+        if not roster_data:
+            # Fallback if no roster found - create minimal roster
+            print(f"Warning: No roster found for {team_name}, creating fallback roster")
+            positions = ['Attack', 'Attack', 'Attack', 'Midfield', 'Midfield', 'Midfield',
+                        'Defense', 'Defense', 'Defense', 'Goalie']
+            for i, pos in enumerate(positions):
+                players.append(Player(
+                    name=f"{team_name} Player{i+1}",
+                    position=pos,
+                    shooting=70 + (i * 2) % 30,
+                    passing=65 + (i * 3) % 25,
+                    defense=50 + (i * 4) % 40,
+                    stamina=60 + (i * 5) % 40,
+                ))
+            return players
+
+        # Create players from the full 25-player roster
+        for i, player_data in enumerate(roster_data):
+            # Generate varied but realistic stats for each player
+            # Base stats with some variation
+            base_shooting = random.randint(50, 85)
+            base_passing = random.randint(50, 85)
+            base_defense = random.randint(50, 85)
+            base_stamina = random.randint(55, 90)
+
+            # Position-specific stat adjustments
+            position = player_data['position']
+            if position == 'Attack':
+                base_shooting += random.randint(5, 15)  # Attackers are better shooters
+                base_passing += random.randint(0, 10)
+            elif position == 'Midfield':
+                base_passing += random.randint(5, 15)   # Midfielders are better passers
+                base_stamina += random.randint(5, 10)   # More stamina
+            elif position == 'Defense':
+                base_defense += random.randint(10, 20)  # Defenders are much better at defense
+                base_shooting -= random.randint(5, 15)  # Less shooting ability
+            elif position == 'Goalie':
+                base_defense += random.randint(15, 25)  # Goalies have high defense
+                base_shooting -= random.randint(10, 20) # Low shooting
+                base_passing -= random.randint(5, 15)   # Lower passing
+
+            # Ensure stats stay within reasonable bounds (30-100)
+            shooting = max(30, min(100, base_shooting))
+            passing = max(30, min(100, base_passing))
+            defense = max(30, min(100, base_defense))
+            stamina = max(30, min(100, base_stamina))
 
             players.append(Player(
-                name=player_name,  # Now uses realistic names!
-                position=pos,
-                shooting=70 + (i * 2) % 30,
-                passing=65 + (i * 3) % 25,
-                defense=50 + (i * 4) % 40,
-                stamina=60 + (i * 5) % 40,
+                name=player_data['name'],
+                position=position,
+                shooting=shooting,
+                passing=passing,
+                defense=defense,
+                stamina=stamina,
             ))
+
         return players
 
     def setup_ui(self):
@@ -218,24 +261,59 @@ class LacrosseSimGUI:
         self.team_combobox.pack(side=tk.LEFT, padx=5)
         self.team_combobox.bind("<<ComboboxSelected>>", self.display_team_roster)
 
-        # Roster display
-        roster_columns = ("Name", "Position", "Shooting", "Passing", "Defense", "Stamina")
+        # Sorting controls
+        sort_frame = ttk.Frame(roster_frame)
+        sort_frame.pack(fill=tk.X, padx=10, pady=5)
+
+        ttk.Label(sort_frame, text="Sort by:").pack(side=tk.LEFT, padx=5)
+        self.sort_combobox = ttk.Combobox(sort_frame, values=[
+            "Position", "Name", "Overall", "Shooting", "Passing", "Defense", "Stamina"
+        ], width=15)
+        self.sort_combobox.set("Position")
+        self.sort_combobox.pack(side=tk.LEFT, padx=5)
+        self.sort_combobox.bind("<<ComboboxSelected>>", self.sort_roster_display)
+
+        # Position filter
+        ttk.Label(sort_frame, text="Filter:").pack(side=tk.LEFT, padx=(15, 5))
+        self.roster_filter_combobox = ttk.Combobox(sort_frame, values=[
+            "All Positions", "Attack", "Midfield", "Defense", "Goalie"
+        ], width=12)
+        self.roster_filter_combobox.set("All Positions")
+        self.roster_filter_combobox.pack(side=tk.LEFT, padx=5)
+        self.roster_filter_combobox.bind("<<ComboboxSelected>>", self.filter_roster_display)
+
+        # Roster display with Overall column
+        roster_columns = ("Name", "Position", "Overall", "Shooting", "Passing", "Defense", "Stamina")
         self.roster_tree = ttk.Treeview(roster_frame, columns=roster_columns, show="headings", height=20)
 
-        for col in roster_columns:
-            self.roster_tree.heading(col, text=col)
-            if col == "Name":
-                self.roster_tree.column(col, width=150, anchor=tk.W)
-            elif col == "Position":
-                self.roster_tree.column(col, width=80, anchor=tk.CENTER)
-            else:
-                self.roster_tree.column(col, width=80, anchor=tk.CENTER)
+        # Configure column headings and make them clickable for sorting
+        column_widths = {
+            "Name": 150,
+            "Position": 80,
+            "Overall": 70,
+            "Shooting": 70,
+            "Passing": 70,
+            "Defense": 70,
+            "Stamina": 70
+        }
 
+        for col in roster_columns:
+            self.roster_tree.heading(col, text=col, command=lambda c=col: self.sort_roster_by_column(c))
+            if col == "Name":
+                self.roster_tree.column(col, width=column_widths[col], anchor=tk.W)
+            else:
+                self.roster_tree.column(col, width=column_widths[col], anchor=tk.CENTER)
+
+        # Scrollbar
         scrollbar_roster = ttk.Scrollbar(roster_frame, orient=tk.VERTICAL, command=self.roster_tree.yview)
         self.roster_tree.configure(yscrollcommand=scrollbar_roster.set)
 
         self.roster_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=10, pady=10)
         scrollbar_roster.pack(side=tk.RIGHT, fill=tk.Y)
+
+        # Store current sort info
+        self.current_sort_column = "Position"
+        self.current_sort_reverse = False
 
     def setup_stats_tab(self):
         stats_frame = ttk.Frame(self.notebook)
@@ -536,8 +614,70 @@ class LacrosseSimGUI:
                 status
             ))
 
+
+    def calculate_overall_rating(self, player, position):
+        """Calculate position-weighted overall rating"""
+        shooting = getattr(player, 'shooting', 70)
+        passing = getattr(player, 'passing', 70)
+        defense = getattr(player, 'defense', 70)
+        stamina = getattr(player, 'stamina', 70)
+
+        # Position-specific weightings (should add up to 1.0)
+        if position == "Attack":
+            # Attackers: Shooting most important, then passing, stamina, defense least
+            weights = {"shooting": 0.45, "passing": 0.25, "stamina": 0.20, "defense": 0.10}
+        elif position == "Midfield":
+            # Midfielders: Balanced, but passing and stamina more important
+            weights = {"passing": 0.30, "stamina": 0.30, "shooting": 0.25, "defense": 0.15}
+        elif position == "Defense":
+            # Defensemen: Defense most important, then stamina, passing, shooting least
+            weights = {"defense": 0.50, "stamina": 0.25, "passing": 0.15, "shooting": 0.10}
+        elif position == "Goalie":
+            # Goalies: Defense critical, stamina important, others less so
+            weights = {"defense": 0.60, "stamina": 0.25, "passing": 0.10, "shooting": 0.05}
+        else:
+            # Default balanced weighting
+            weights = {"shooting": 0.25, "passing": 0.25, "defense": 0.25, "stamina": 0.25}
+
+        overall = (
+            shooting * weights["shooting"] +
+            passing * weights["passing"] +
+            defense * weights["defense"] +
+            stamina * weights["stamina"]
+        )
+
+        # Round down to 2 digits (no decimal places)
+        import math
+        return math.floor(overall)
+
+    def sort_roster_by_column(self, column):
+        """Sort roster by clicking column header"""
+        if self.current_sort_column == column:
+            # If clicking same column, reverse order
+            self.current_sort_reverse = not self.current_sort_reverse
+        else:
+            # New column, start with ascending order
+            self.current_sort_column = column
+            self.current_sort_reverse = False
+
+        # Update the sort combobox to match
+        self.sort_combobox.set(column)
+
+        # Re-display roster with new sort
+        self.display_team_roster()
+
+    def sort_roster_display(self, event=None):
+        """Sort roster when dropdown selection changes"""
+        self.current_sort_column = self.sort_combobox.get()
+        self.current_sort_reverse = False  # Reset to ascending when using dropdown
+        self.display_team_roster()
+
+    def filter_roster_display(self, event=None):
+        """Filter roster by position"""
+        self.display_team_roster()
+
     def display_team_roster(self, event=None):
-        """Display roster for selected team"""
+        """Display roster for selected team with sorting and filtering"""
         selected_team = self.team_combobox.get()
         if not selected_team:
             return
@@ -556,16 +696,87 @@ class LacrosseSimGUI:
         if not team_obj or not hasattr(team_obj, 'players'):
             return
 
-        # Display players
+        # Get filter setting
+        position_filter = self.roster_filter_combobox.get() if hasattr(self, 'roster_filter_combobox') else "All Positions"
+
+        # Filter players by position if needed
+        filtered_players = []
         for player in team_obj.players:
+            if position_filter == "All Positions" or player.position == position_filter:
+                filtered_players.append(player)
+
+        # Calculate overall ratings and prepare data for sorting
+        player_data = []
+        for player in filtered_players:
+            overall = self.calculate_overall_rating(player, player.position)
+            player_data.append({
+                'player': player,
+                'name': player.name,
+                'position': player.position,
+                'overall': overall,
+                'shooting': getattr(player, 'shooting', 'N/A'),
+                'passing': getattr(player, 'passing', 'N/A'),
+                'defense': getattr(player, 'defense', 'N/A'),
+                'stamina': getattr(player, 'stamina', 'N/A')
+            })
+
+        # Sort the data
+        sort_column = getattr(self, 'current_sort_column', 'Position')
+        reverse_sort = getattr(self, 'current_sort_reverse', False)
+
+        if sort_column == "Name":
+            player_data.sort(key=lambda x: x['name'], reverse=reverse_sort)
+        elif sort_column == "Position":
+            # Custom position order: Attack, Midfield, Defense, Goalie
+            position_order = {"Attack": 1, "Midfield": 2, "Defense": 3, "Goalie": 4}
+            player_data.sort(key=lambda x: (position_order.get(x['position'], 5), x['name']), reverse=reverse_sort)
+        elif sort_column == "Overall":
+            player_data.sort(key=lambda x: x['overall'], reverse=reverse_sort)
+        elif sort_column in ["Shooting", "Passing", "Defense", "Stamina"]:
+            attr_name = sort_column.lower()
+            player_data.sort(key=lambda x: getattr(x['player'], attr_name, 0), reverse=reverse_sort)
+
+        # Display sorted and filtered players
+        for data in player_data:
             self.roster_tree.insert("", tk.END, values=(
-                player.name,
-                player.position,
-                getattr(player, 'shooting', 'N/A'),
-                getattr(player, 'passing', 'N/A'),
-                getattr(player, 'defense', 'N/A'),
-                getattr(player, 'stamina', 'N/A')
+                data['name'],
+                data['position'],
+                data['overall'],
+                data['shooting'],
+                data['passing'],
+                data['defense'],
+                data['stamina']
             ))
+
+        # Update team summary
+        self.update_roster_summary(filtered_players, selected_team)
+
+    def update_roster_summary(self, players, team_name):
+        """Update roster summary information"""
+        if not players:
+            return
+
+        # Count by position
+        position_counts = {"Attack": 0, "Midfield": 0, "Defense": 0, "Goalie": 0}
+        total_overall = 0
+
+        for player in players:
+            position_counts[player.position] += 1
+            total_overall += self.calculate_overall_rating(player, player.position)
+
+        # Round down average overall to whole number
+        import math
+        avg_overall = math.floor(total_overall / len(players)) if players else 0
+
+        # You can display this info in the status bar or add a summary label
+        summary = f"{team_name}: {len(players)} players | Avg Overall: {avg_overall} | "
+        summary += f"A:{position_counts['Attack']} M:{position_counts['Midfield']} D:{position_counts['Defense']} G:{position_counts['Goalie']}"
+
+        # Update status bar with summary
+        if hasattr(self, 'status_var'):
+            current_status = self.status_var.get()
+            if "simulated" in current_status.lower() or "ready" in current_status.lower():
+                self.status_var.set(summary)
 
     def update_stats_display(self):
         """Update the player stats display"""

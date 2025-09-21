@@ -1,506 +1,1226 @@
 {
   "Buffalo Glacier": [
     {
-      "name": "Chase Young",
+      "name": "Michael Walker",
       "position": "Attack"
     },
     {
-      "name": "Evan Walsh",
+      "name": "Jack White",
+      "position": "Midfield"
+    },
+    {
+      "name": "Sean McCarthy",
+      "position": "Midfield"
+    },
+    {
+      "name": "Chris Mahoney",
       "position": "Attack"
     },
     {
-      "name": "Devon Thompson",
-      "position": "Attack"
-    },
-    {
-      "name": "Jordan McKenzie",
-      "position": "Midfield"
-    },
-    {
-      "name": "Brian Young",
-      "position": "Midfield"
-    },
-    {
-      "name": "Patrick Reid",
-      "position": "Midfield"
-    },
-    {
-      "name": "Colin O'Connor",
-      "position": "Defense"
-    },
-    {
-      "name": "Brady Ferguson",
-      "position": "Defense"
-    },
-    {
-      "name": "James Baker",
-      "position": "Defense"
-    },
-    {
-      "name": "Kaden Rodriguez",
+      "name": "Grayson Nguyen",
       "position": "Goalie"
+    },
+    {
+      "name": "Chase Allen",
+      "position": "Midfield"
+    },
+    {
+      "name": "Connor Smith",
+      "position": "Defense"
+    },
+    {
+      "name": "Wyatt Morgan",
+      "position": "Midfield"
+    },
+    {
+      "name": "Bryce O'Brien",
+      "position": "Goalie"
+    },
+    {
+      "name": "Hunter Cruz",
+      "position": "Attack"
+    },
+    {
+      "name": "Paxton Flores",
+      "position": "Attack"
+    },
+    {
+      "name": "Lucas Walker",
+      "position": "Attack"
+    },
+    {
+      "name": "Tanner Brown",
+      "position": "Goalie"
+    },
+    {
+      "name": "Trevor Patterson",
+      "position": "Defense"
+    },
+    {
+      "name": "Kevin Allen",
+      "position": "Midfield"
+    },
+    {
+      "name": "Shane Hogan",
+      "position": "Defense"
+    },
+    {
+      "name": "Kaden Williams",
+      "position": "Defense"
+    },
+    {
+      "name": "Tristan Lewis",
+      "position": "Attack"
+    },
+    {
+      "name": "Kevin Gallagher",
+      "position": "Attack"
+    },
+    {
+      "name": "Nolan McKenzie",
+      "position": "Attack"
+    },
+    {
+      "name": "Declan Ferguson",
+      "position": "Attack"
+    },
+    {
+      "name": "James King",
+      "position": "Defense"
+    },
+    {
+      "name": "Colton Lynch",
+      "position": "Defense"
+    },
+    {
+      "name": "Robert Williams",
+      "position": "Midfield"
+    },
+    {
+      "name": "Cole Hernandez",
+      "position": "Midfield"
     }
   ],
   "Richmond Rebellion": [
     {
-      "name": "Ethan Murray",
-      "position": "Attack"
-    },
-    {
-      "name": "Paxton Diaz",
-      "position": "Attack"
-    },
-    {
-      "name": "Grant Fraser",
-      "position": "Attack"
-    },
-    {
-      "name": "Bryce Diaz",
+      "name": "Finn Morgan",
       "position": "Midfield"
     },
     {
-      "name": "Mike Phillips",
-      "position": "Midfield"
+      "name": "Paxton Bennett",
+      "position": "Attack"
     },
     {
-      "name": "Griffin MacLeod",
-      "position": "Midfield"
+      "name": "Ethan Diaz",
+      "position": "Attack"
     },
     {
-      "name": "Chris Reyes",
-      "position": "Defense"
-    },
-    {
-      "name": "Noah Rivera",
-      "position": "Defense"
-    },
-    {
-      "name": "Alex McBride",
-      "position": "Defense"
-    },
-    {
-      "name": "Jack Anderson",
+      "name": "Matt Stewart",
       "position": "Goalie"
+    },
+    {
+      "name": "Noah Hogan",
+      "position": "Defense"
+    },
+    {
+      "name": "Tyler Hill",
+      "position": "Attack"
+    },
+    {
+      "name": "Luke Anderson",
+      "position": "Defense"
+    },
+    {
+      "name": "Jake Flynn",
+      "position": "Midfield"
+    },
+    {
+      "name": "Nick Shannon",
+      "position": "Defense"
+    },
+    {
+      "name": "Noah Casey",
+      "position": "Defense"
+    },
+    {
+      "name": "Drew Kane",
+      "position": "Midfield"
+    },
+    {
+      "name": "Cooper Lopez",
+      "position": "Defense"
+    },
+    {
+      "name": "Hunter Duncan",
+      "position": "Goalie"
+    },
+    {
+      "name": "Hunter Moore",
+      "position": "Attack"
+    },
+    {
+      "name": "Gavin Rourke",
+      "position": "Defense"
+    },
+    {
+      "name": "Sam Young",
+      "position": "Attack"
+    },
+    {
+      "name": "Patrick Carter",
+      "position": "Midfield"
+    },
+    {
+      "name": "Alex Brady",
+      "position": "Goalie"
+    },
+    {
+      "name": "Ian Thomas",
+      "position": "Midfield"
+    },
+    {
+      "name": "Jake Fitzgerald",
+      "position": "Defense"
+    },
+    {
+      "name": "Garrett Turner",
+      "position": "Defense"
+    },
+    {
+      "name": "Tanner O'Sullivan",
+      "position": "Defense"
+    },
+    {
+      "name": "Brady Ryan",
+      "position": "Attack"
+    },
+    {
+      "name": "Landon Casey",
+      "position": "Midfield"
+    },
+    {
+      "name": "Bryce Walker",
+      "position": "Midfield"
     }
   ],
   "Louisville Stampede": [
     {
-      "name": "Grant Brennan",
-      "position": "Attack"
-    },
-    {
-      "name": "Gavin Martin",
-      "position": "Attack"
-    },
-    {
-      "name": "Gavin Byrne",
-      "position": "Attack"
-    },
-    {
-      "name": "Patrick Rourke",
+      "name": "Colin Martinez",
       "position": "Midfield"
     },
     {
-      "name": "Carson Bell",
-      "position": "Midfield"
-    },
-    {
-      "name": "Owen Perez",
-      "position": "Midfield"
-    },
-    {
-      "name": "Jaxon Sanchez",
-      "position": "Defense"
-    },
-    {
-      "name": "Gavin Garcia",
-      "position": "Defense"
-    },
-    {
-      "name": "Matt Clark",
-      "position": "Defense"
-    },
-    {
-      "name": "Hunter Cameron",
+      "name": "Nolan McGrath",
       "position": "Goalie"
+    },
+    {
+      "name": "Wyatt Smith",
+      "position": "Midfield"
+    },
+    {
+      "name": "Caleb Stewart",
+      "position": "Attack"
+    },
+    {
+      "name": "Blake Young",
+      "position": "Midfield"
+    },
+    {
+      "name": "Ben Connolly",
+      "position": "Defense"
+    },
+    {
+      "name": "Garrett Sullivan",
+      "position": "Goalie"
+    },
+    {
+      "name": "Kyle Burke",
+      "position": "Goalie"
+    },
+    {
+      "name": "Noah Reid",
+      "position": "Midfield"
+    },
+    {
+      "name": "Liam Perez",
+      "position": "Defense"
+    },
+    {
+      "name": "Evan Morgan",
+      "position": "Attack"
+    },
+    {
+      "name": "Brendan Hill",
+      "position": "Midfield"
+    },
+    {
+      "name": "Miles Nelson",
+      "position": "Midfield"
+    },
+    {
+      "name": "Brayden Rourke",
+      "position": "Midfield"
+    },
+    {
+      "name": "Ryan Mahoney",
+      "position": "Attack"
+    },
+    {
+      "name": "Lucas Williams",
+      "position": "Attack"
+    },
+    {
+      "name": "Carson Mahoney",
+      "position": "Midfield"
+    },
+    {
+      "name": "Grayson Miller",
+      "position": "Attack"
+    },
+    {
+      "name": "Devon Edwards",
+      "position": "Midfield"
+    },
+    {
+      "name": "Sam Smith",
+      "position": "Defense"
+    },
+    {
+      "name": "Max Lynch",
+      "position": "Defense"
+    },
+    {
+      "name": "Harrison Hamilton",
+      "position": "Goalie"
+    },
+    {
+      "name": "Tristan Ryan",
+      "position": "Defense"
+    },
+    {
+      "name": "Nick Ryan",
+      "position": "Defense"
+    },
+    {
+      "name": "Mason Hall",
+      "position": "Attack"
     }
   ],
   "Minneapolis Chill": [
     {
-      "name": "Kevin Sanchez",
+      "name": "Parker Collins",
       "position": "Attack"
     },
     {
-      "name": "Matt McGrath",
-      "position": "Attack"
-    },
-    {
-      "name": "Camden Mahoney",
-      "position": "Attack"
-    },
-    {
-      "name": "Trevor Stewart",
-      "position": "Midfield"
-    },
-    {
-      "name": "Hudson Scott",
-      "position": "Midfield"
-    },
-    {
-      "name": "Nick Davis",
-      "position": "Midfield"
-    },
-    {
-      "name": "Devon Lynch",
+      "name": "Michael Ross",
       "position": "Defense"
     },
     {
-      "name": "Ryder Garcia",
-      "position": "Defense"
-    },
-    {
-      "name": "Jaxon Carter",
-      "position": "Defense"
-    },
-    {
-      "name": "James Hall",
+      "name": "Harrison Burke",
       "position": "Goalie"
+    },
+    {
+      "name": "John Robinson",
+      "position": "Attack"
+    },
+    {
+      "name": "Thomas Smith",
+      "position": "Midfield"
+    },
+    {
+      "name": "Brody Cruz",
+      "position": "Defense"
+    },
+    {
+      "name": "Miles Wilson",
+      "position": "Defense"
+    },
+    {
+      "name": "William Powell",
+      "position": "Attack"
+    },
+    {
+      "name": "Camden Ramirez",
+      "position": "Midfield"
+    },
+    {
+      "name": "Josh Clark",
+      "position": "Attack"
+    },
+    {
+      "name": "Parker Quinn",
+      "position": "Defense"
+    },
+    {
+      "name": "Mason Bennett",
+      "position": "Attack"
+    },
+    {
+      "name": "Jack Rodriguez",
+      "position": "Goalie"
+    },
+    {
+      "name": "Josh Callahan",
+      "position": "Attack"
+    },
+    {
+      "name": "Ian Jones",
+      "position": "Goalie"
+    },
+    {
+      "name": "Ethan Adams",
+      "position": "Midfield"
+    },
+    {
+      "name": "Luke Brady",
+      "position": "Midfield"
+    },
+    {
+      "name": "Austin Murray",
+      "position": "Midfield"
+    },
+    {
+      "name": "Declan Wilson",
+      "position": "Midfield"
+    },
+    {
+      "name": "Landon Hamilton",
+      "position": "Goalie"
+    },
+    {
+      "name": "Derek Green",
+      "position": "Midfield"
+    },
+    {
+      "name": "Mike Duffy",
+      "position": "Midfield"
+    },
+    {
+      "name": "Bentley McKenzie",
+      "position": "Midfield"
+    },
+    {
+      "name": "Trevor Moore",
+      "position": "Defense"
+    },
+    {
+      "name": "Reid Walsh",
+      "position": "Attack"
     }
   ],
   "Phoenix Dustrunners": [
     {
-      "name": "Harrison White",
+      "name": "Ian Clark",
       "position": "Attack"
     },
     {
-      "name": "Patrick Adams",
+      "name": "Reese Bennett",
       "position": "Attack"
     },
     {
-      "name": "Carter Martinez",
-      "position": "Attack"
-    },
-    {
-      "name": "Zach Walsh",
-      "position": "Midfield"
-    },
-    {
-      "name": "Finn Carter",
-      "position": "Midfield"
-    },
-    {
-      "name": "Camden Jackson",
-      "position": "Midfield"
-    },
-    {
-      "name": "Mason Flynn",
+      "name": "Evan Edwards",
       "position": "Defense"
+    },
+    {
+      "name": "Jack Flores",
+      "position": "Attack"
+    },
+    {
+      "name": "Easton Reid",
+      "position": "Defense"
+    },
+    {
+      "name": "Zach Gonzalez",
+      "position": "Goalie"
+    },
+    {
+      "name": "Carson Rivera",
+      "position": "Attack"
+    },
+    {
+      "name": "Miles Sanchez",
+      "position": "Defense"
+    },
+    {
+      "name": "Jake Nelson",
+      "position": "Midfield"
+    },
+    {
+      "name": "Aidan Grant",
+      "position": "Attack"
+    },
+    {
+      "name": "Cooper Hogan",
+      "position": "Goalie"
+    },
+    {
+      "name": "Carson Evans",
+      "position": "Midfield"
+    },
+    {
+      "name": "Alex Murphy",
+      "position": "Defense"
+    },
+    {
+      "name": "Jake McCarthy",
+      "position": "Midfield"
+    },
+    {
+      "name": "Brayden Miller",
+      "position": "Defense"
+    },
+    {
+      "name": "Robert Walsh",
+      "position": "Midfield"
+    },
+    {
+      "name": "Declan Daly",
+      "position": "Attack"
+    },
+    {
+      "name": "Kevin Bell",
+      "position": "Defense"
+    },
+    {
+      "name": "Robert Bell",
+      "position": "Goalie"
+    },
+    {
+      "name": "Miles Baker",
+      "position": "Defense"
+    },
+    {
+      "name": "Colin Donovan",
+      "position": "Defense"
+    },
+    {
+      "name": "Chase McGrath",
+      "position": "Attack"
+    },
+    {
+      "name": "Tyler Lynch",
+      "position": "Defense"
+    },
+    {
+      "name": "Brendan Rourke",
+      "position": "Midfield"
+    },
+    {
+      "name": "Nick Williams",
+      "position": "Midfield"
+    }
+  ],
+  "San Jose Quakebirds": [
+    {
+      "name": "Camden Ferguson",
+      "position": "Defense"
+    },
+    {
+      "name": "Bryce Scott",
+      "position": "Defense"
+    },
+    {
+      "name": "Brian Garcia",
+      "position": "Goalie"
+    },
+    {
+      "name": "Trey Gallagher",
+      "position": "Goalie"
+    },
+    {
+      "name": "James Powell",
+      "position": "Attack"
+    },
+    {
+      "name": "Paxton Clark",
+      "position": "Midfield"
+    },
+    {
+      "name": "Hunter Sanchez",
+      "position": "Midfield"
+    },
+    {
+      "name": "Sawyer Patterson",
+      "position": "Midfield"
+    },
+    {
+      "name": "Wyatt King",
+      "position": "Attack"
+    },
+    {
+      "name": "Cole Hall",
+      "position": "Midfield"
+    },
+    {
+      "name": "Cody Adams",
+      "position": "Attack"
+    },
+    {
+      "name": "Patrick Jackson",
+      "position": "Attack"
+    },
+    {
+      "name": "Camden Mahoney",
+      "position": "Midfield"
+    },
+    {
+      "name": "Mike King",
+      "position": "Defense"
+    },
+    {
+      "name": "Lincoln O'Neill",
+      "position": "Attack"
+    },
+    {
+      "name": "Connor Wilson",
+      "position": "Attack"
+    },
+    {
+      "name": "Declan Duncan",
+      "position": "Attack"
+    },
+    {
+      "name": "Connor Bell",
+      "position": "Attack"
+    },
+    {
+      "name": "Brayden Walker",
+      "position": "Midfield"
+    },
+    {
+      "name": "Nolan Ross",
+      "position": "Defense"
+    },
+    {
+      "name": "Grant Hogan",
+      "position": "Attack"
+    },
+    {
+      "name": "Owen O'Brien",
+      "position": "Defense"
+    },
+    {
+      "name": "Harrison Brown",
+      "position": "Defense"
+    },
+    {
+      "name": "Ethan Reid",
+      "position": "Goalie"
+    },
+    {
+      "name": "Jack Henderson",
+      "position": "Defense"
+    }
+  ],
+  "Toronto Ironhawks": [
+    {
+      "name": "Chase Wilson",
+      "position": "Attack"
+    },
+    {
+      "name": "Derek Nelson",
+      "position": "Midfield"
+    },
+    {
+      "name": "Evan Davis",
+      "position": "Defense"
+    },
+    {
+      "name": "Michael Quinn",
+      "position": "Attack"
+    },
+    {
+      "name": "Andrew Murray",
+      "position": "Defense"
+    },
+    {
+      "name": "Brayden O'Sullivan",
+      "position": "Goalie"
+    },
+    {
+      "name": "Matt Hall",
+      "position": "Midfield"
+    },
+    {
+      "name": "Parker Cruz",
+      "position": "Defense"
+    },
+    {
+      "name": "Michael Stewart",
+      "position": "Midfield"
+    },
+    {
+      "name": "Max Shea",
+      "position": "Midfield"
+    },
+    {
+      "name": "Matt O'Connor",
+      "position": "Defense"
+    },
+    {
+      "name": "Reese Daly",
+      "position": "Attack"
+    },
+    {
+      "name": "Evan Diaz",
+      "position": "Defense"
+    },
+    {
+      "name": "Camden Reid",
+      "position": "Attack"
+    },
+    {
+      "name": "Brian Kennedy",
+      "position": "Midfield"
+    },
+    {
+      "name": "Kaden Burke",
+      "position": "Defense"
+    },
+    {
+      "name": "Sean Rodriguez",
+      "position": "Goalie"
+    },
+    {
+      "name": "Chase Hill",
+      "position": "Attack"
     },
     {
       "name": "Hunter Wright",
       "position": "Defense"
     },
     {
-      "name": "Cody Gomez",
-      "position": "Defense"
+      "name": "Cooper Jackson",
+      "position": "Midfield"
     },
     {
-      "name": "Jack Bennett",
+      "name": "Patrick Brennan",
+      "position": "Midfield"
+    },
+    {
+      "name": "Camden Ryan",
+      "position": "Midfield"
+    },
+    {
+      "name": "Bentley Martinez",
       "position": "Goalie"
-    }
-  ],
-  "San Jose Quakebirds": [
-    {
-      "name": "Kaden Quinn",
-      "position": "Attack"
     },
     {
-      "name": "Noah Kennedy",
-      "position": "Attack"
-    },
-    {
-      "name": "Carter Flores",
-      "position": "Attack"
-    },
-    {
-      "name": "Mike Thomas",
-      "position": "Midfield"
-    },
-    {
-      "name": "Evan McKenzie",
-      "position": "Midfield"
-    },
-    {
-      "name": "Jordan Rourke",
-      "position": "Midfield"
-    },
-    {
-      "name": "Kevin Sullivan",
-      "position": "Defense"
-    },
-    {
-      "name": "Chris Gonzalez",
-      "position": "Defense"
-    },
-    {
-      "name": "Miles Martinez",
-      "position": "Defense"
-    },
-    {
-      "name": "Patrick Johnson",
+      "name": "Aidan Thompson",
       "position": "Goalie"
-    }
-  ],
-  "Toronto Ironhawks": [
-    {
-      "name": "Blake Kane",
-      "position": "Attack"
     },
     {
-      "name": "Colton Ramirez",
-      "position": "Attack"
-    },
-    {
-      "name": "Trevor Hill",
-      "position": "Attack"
-    },
-    {
-      "name": "Bentley Nguyen",
+      "name": "Jake Murphy",
       "position": "Midfield"
-    },
-    {
-      "name": "Mike Lopez",
-      "position": "Midfield"
-    },
-    {
-      "name": "Easton Kennedy",
-      "position": "Midfield"
-    },
-    {
-      "name": "Cole Martinez",
-      "position": "Defense"
-    },
-    {
-      "name": "Grant O'Brien",
-      "position": "Defense"
-    },
-    {
-      "name": "Evan Rourke",
-      "position": "Defense"
-    },
-    {
-      "name": "Max White",
-      "position": "Goalie"
     }
   ],
   "Montreal Sentries": [
     {
-      "name": "Carson Gallagher",
-      "position": "Attack"
-    },
-    {
-      "name": "Cody Robinson",
-      "position": "Attack"
-    },
-    {
-      "name": "Jaxon Shea",
-      "position": "Attack"
-    },
-    {
-      "name": "Harrison Donovan",
+      "name": "Miles Scott",
       "position": "Midfield"
     },
     {
-      "name": "Carson McGrath",
+      "name": "Garrett Parker",
       "position": "Midfield"
     },
     {
-      "name": "Carter Hogan",
+      "name": "Brody Hamilton",
       "position": "Midfield"
     },
     {
-      "name": "Hudson Murray",
+      "name": "Easton Perez",
+      "position": "Midfield"
+    },
+    {
+      "name": "Sam Wright",
       "position": "Defense"
     },
     {
-      "name": "Gavin Murray",
-      "position": "Defense"
+      "name": "Ian Donovan",
+      "position": "Attack"
     },
     {
-      "name": "Colin Edwards",
-      "position": "Defense"
+      "name": "Grant Daly",
+      "position": "Midfield"
     },
     {
-      "name": "Tanner Lee",
+      "name": "Evan Hall",
       "position": "Goalie"
+    },
+    {
+      "name": "Liam Moore",
+      "position": "Defense"
+    },
+    {
+      "name": "Luke Gomez",
+      "position": "Midfield"
+    },
+    {
+      "name": "Brendan Casey",
+      "position": "Attack"
+    },
+    {
+      "name": "Brody Fitzgerald",
+      "position": "Midfield"
+    },
+    {
+      "name": "Miles Bell",
+      "position": "Goalie"
+    },
+    {
+      "name": "Ben Flynn",
+      "position": "Defense"
+    },
+    {
+      "name": "Mike Kelly",
+      "position": "Midfield"
+    },
+    {
+      "name": "Bryce Fraser",
+      "position": "Attack"
+    },
+    {
+      "name": "Owen Duncan",
+      "position": "Attack"
+    },
+    {
+      "name": "Kevin Roberts",
+      "position": "Midfield"
+    },
+    {
+      "name": "William Nelson",
+      "position": "Goalie"
+    },
+    {
+      "name": "Connor Adams",
+      "position": "Goalie"
+    },
+    {
+      "name": "Kaden Mitchell",
+      "position": "Midfield"
+    },
+    {
+      "name": "Nick Quinn",
+      "position": "Defense"
+    },
+    {
+      "name": "Kevin Murray",
+      "position": "Defense"
+    },
+    {
+      "name": "Chris Taylor",
+      "position": "Attack"
+    },
+    {
+      "name": "Colton Anderson",
+      "position": "Attack"
     }
   ],
   "Calgary Nightwolves": [
     {
-      "name": "Finn McGrath",
-      "position": "Attack"
-    },
-    {
-      "name": "Chase Burke",
-      "position": "Attack"
-    },
-    {
-      "name": "Colin Duncan",
-      "position": "Attack"
-    },
-    {
-      "name": "Carter Flanagan",
-      "position": "Midfield"
-    },
-    {
-      "name": "Sawyer Sullivan",
-      "position": "Midfield"
-    },
-    {
-      "name": "Colin Kane",
-      "position": "Midfield"
-    },
-    {
-      "name": "Brody Ross",
+      "name": "Harrison Ferguson",
       "position": "Defense"
     },
     {
-      "name": "Jace Lee",
-      "position": "Defense"
-    },
-    {
-      "name": "William Bennett",
-      "position": "Defense"
-    },
-    {
-      "name": "Ben Martin",
+      "name": "Reese Connolly",
       "position": "Goalie"
+    },
+    {
+      "name": "Harrison Powell",
+      "position": "Midfield"
+    },
+    {
+      "name": "Austin Green",
+      "position": "Defense"
+    },
+    {
+      "name": "Brady Lopez",
+      "position": "Goalie"
+    },
+    {
+      "name": "Connor Lynch",
+      "position": "Midfield"
+    },
+    {
+      "name": "Noah Gonzalez",
+      "position": "Attack"
+    },
+    {
+      "name": "Carter Rourke",
+      "position": "Midfield"
+    },
+    {
+      "name": "Bentley Patterson",
+      "position": "Goalie"
+    },
+    {
+      "name": "Harrison Diaz",
+      "position": "Defense"
+    },
+    {
+      "name": "Parker Scott",
+      "position": "Attack"
+    },
+    {
+      "name": "Lincoln Edwards",
+      "position": "Attack"
+    },
+    {
+      "name": "Grayson Thomas",
+      "position": "Defense"
+    },
+    {
+      "name": "Andrew Green",
+      "position": "Attack"
+    },
+    {
+      "name": "Patrick Lee",
+      "position": "Defense"
+    },
+    {
+      "name": "Owen Morgan",
+      "position": "Midfield"
+    },
+    {
+      "name": "Trey Scott",
+      "position": "Attack"
+    },
+    {
+      "name": "Zach Sanchez",
+      "position": "Midfield"
+    },
+    {
+      "name": "Kaden Phillips",
+      "position": "Attack"
+    },
+    {
+      "name": "Drew Lopez",
+      "position": "Defense"
+    },
+    {
+      "name": "Paxton Shannon",
+      "position": "Midfield"
+    },
+    {
+      "name": "Jake Brown",
+      "position": "Goalie"
+    },
+    {
+      "name": "Nolan Stewart",
+      "position": "Defense"
+    },
+    {
+      "name": "Grayson Rodriguez",
+      "position": "Defense"
+    },
+    {
+      "name": "Kyle Wright",
+      "position": "Midfield"
     }
   ],
   "Spokane Tempest": [
     {
-      "name": "Drew Sullivan",
-      "position": "Attack"
-    },
-    {
-      "name": "Tanner Lewis",
-      "position": "Attack"
-    },
-    {
-      "name": "Nick Morgan",
-      "position": "Attack"
-    },
-    {
-      "name": "Logan McDonnell",
-      "position": "Midfield"
-    },
-    {
-      "name": "Jaxon Diaz",
-      "position": "Midfield"
-    },
-    {
-      "name": "Zach Henderson",
-      "position": "Midfield"
-    },
-    {
-      "name": "Ben McCarthy",
+      "name": "Brady Shea",
       "position": "Defense"
     },
     {
-      "name": "Owen Bennett",
-      "position": "Defense"
-    },
-    {
-      "name": "Tanner Graham",
-      "position": "Defense"
-    },
-    {
-      "name": "Reese Taylor",
+      "name": "Easton Evans",
       "position": "Goalie"
+    },
+    {
+      "name": "Paxton Flanagan",
+      "position": "Attack"
+    },
+    {
+      "name": "Colton Cameron",
+      "position": "Attack"
+    },
+    {
+      "name": "Brendan Robinson",
+      "position": "Defense"
+    },
+    {
+      "name": "Patrick Wright",
+      "position": "Attack"
+    },
+    {
+      "name": "Liam McCarthy",
+      "position": "Defense"
+    },
+    {
+      "name": "Tyler Cameron",
+      "position": "Midfield"
+    },
+    {
+      "name": "Mason McBride",
+      "position": "Midfield"
+    },
+    {
+      "name": "Jack Flanagan",
+      "position": "Attack"
+    },
+    {
+      "name": "Tanner Sullivan",
+      "position": "Defense"
+    },
+    {
+      "name": "Ryan Moore",
+      "position": "Midfield"
+    },
+    {
+      "name": "Jace Gallagher",
+      "position": "Midfield"
+    },
+    {
+      "name": "Jack Malone",
+      "position": "Goalie"
+    },
+    {
+      "name": "Owen Fitzgerald",
+      "position": "Midfield"
+    },
+    {
+      "name": "Logan Martin",
+      "position": "Attack"
+    },
+    {
+      "name": "Grayson Ferguson",
+      "position": "Midfield"
+    },
+    {
+      "name": "Kevin McCarthy",
+      "position": "Defense"
+    },
+    {
+      "name": "Trey Anderson",
+      "position": "Attack"
+    },
+    {
+      "name": "Trevor Fraser",
+      "position": "Attack"
+    },
+    {
+      "name": "Miles McCarthy",
+      "position": "Midfield"
+    },
+    {
+      "name": "Lincoln Roberts",
+      "position": "Defense"
+    },
+    {
+      "name": "Cooper Taylor",
+      "position": "Goalie"
+    },
+    {
+      "name": "Ethan Grant",
+      "position": "Midfield"
+    },
+    {
+      "name": "Kyle McDonnell",
+      "position": "Defense"
     }
   ],
   "El Paso Vortex": [
     {
-      "name": "Nolan Garcia",
-      "position": "Attack"
-    },
-    {
-      "name": "Sawyer White",
-      "position": "Attack"
-    },
-    {
-      "name": "Austin Garcia",
-      "position": "Attack"
-    },
-    {
-      "name": "Easton Carter",
+      "name": "David Wilson",
       "position": "Midfield"
     },
     {
-      "name": "Nolan MacLeod",
+      "name": "Max Callahan",
+      "position": "Defense"
+    },
+    {
+      "name": "Brody Patterson",
       "position": "Midfield"
     },
     {
-      "name": "Jace Connolly",
+      "name": "Carter Fitzgerald",
+      "position": "Attack"
+    },
+    {
+      "name": "Sean Roberts",
+      "position": "Defense"
+    },
+    {
+      "name": "Parker Walker",
       "position": "Midfield"
     },
     {
-      "name": "Robert O'Brien",
+      "name": "Ben Johnson",
       "position": "Defense"
     },
     {
-      "name": "Sam Murray",
+      "name": "Ethan Henderson",
+      "position": "Midfield"
+    },
+    {
+      "name": "Evan Turner",
       "position": "Defense"
     },
     {
-      "name": "Austin Adams",
-      "position": "Defense"
-    },
-    {
-      "name": "Hunter Baker",
+      "name": "Josh Stewart",
       "position": "Goalie"
+    },
+    {
+      "name": "Wyatt Ferguson",
+      "position": "Defense"
+    },
+    {
+      "name": "Sean Ross",
+      "position": "Attack"
+    },
+    {
+      "name": "Mike Callahan",
+      "position": "Midfield"
+    },
+    {
+      "name": "Grayson Cameron",
+      "position": "Defense"
+    },
+    {
+      "name": "John Brennan",
+      "position": "Midfield"
+    },
+    {
+      "name": "Tristan Allen",
+      "position": "Attack"
+    },
+    {
+      "name": "Lucas Lynch",
+      "position": "Midfield"
+    },
+    {
+      "name": "Zach Rodriguez",
+      "position": "Goalie"
+    },
+    {
+      "name": "Owen Graham",
+      "position": "Attack"
+    },
+    {
+      "name": "Owen Cameron",
+      "position": "Defense"
+    },
+    {
+      "name": "David Daly",
+      "position": "Goalie"
+    },
+    {
+      "name": "Patrick Wilson",
+      "position": "Attack"
+    },
+    {
+      "name": "Evan Torres",
+      "position": "Defense"
+    },
+    {
+      "name": "Brody MacLeod",
+      "position": "Goalie"
+    },
+    {
+      "name": "Cooper Gallagher",
+      "position": "Attack"
     }
   ],
   "Atlanta Firewing": [
     {
-      "name": "Grant Hernandez",
-      "position": "Attack"
-    },
-    {
-      "name": "Brendan McGrath",
-      "position": "Attack"
-    },
-    {
-      "name": "Ben Walker",
-      "position": "Attack"
-    },
-    {
-      "name": "Noah Flanagan",
-      "position": "Midfield"
-    },
-    {
-      "name": "Thomas Baker",
-      "position": "Midfield"
-    },
-    {
-      "name": "Colton Harris",
-      "position": "Midfield"
-    },
-    {
-      "name": "Ryder Reid",
+      "name": "Griffin O'Neill",
       "position": "Defense"
     },
     {
-      "name": "Drew Nelson",
+      "name": "Brady Brown",
       "position": "Defense"
     },
     {
-      "name": "Declan Burke",
+      "name": "Jack Parker",
       "position": "Defense"
     },
     {
-      "name": "Cooper Shannon",
+      "name": "William Fraser",
+      "position": "Attack"
+    },
+    {
+      "name": "Jake Parker",
+      "position": "Attack"
+    },
+    {
+      "name": "Nick Casey",
+      "position": "Attack"
+    },
+    {
+      "name": "Drew Allen",
+      "position": "Midfield"
+    },
+    {
+      "name": "Cole Evans",
       "position": "Goalie"
+    },
+    {
+      "name": "Caleb O'Neill",
+      "position": "Goalie"
+    },
+    {
+      "name": "Lincoln Smith",
+      "position": "Attack"
+    },
+    {
+      "name": "Trey Murray",
+      "position": "Attack"
+    },
+    {
+      "name": "Carter Patterson",
+      "position": "Attack"
+    },
+    {
+      "name": "Ethan Lynch",
+      "position": "Attack"
+    },
+    {
+      "name": "Camden Kennedy",
+      "position": "Midfield"
+    },
+    {
+      "name": "Sam Stewart",
+      "position": "Defense"
+    },
+    {
+      "name": "Carter MacLeod",
+      "position": "Midfield"
+    },
+    {
+      "name": "Wyatt Malone",
+      "position": "Midfield"
+    },
+    {
+      "name": "Harrison Hill",
+      "position": "Attack"
+    },
+    {
+      "name": "Kevin Flanagan",
+      "position": "Defense"
+    },
+    {
+      "name": "Hudson Nelson",
+      "position": "Midfield"
+    },
+    {
+      "name": "Brian Anderson",
+      "position": "Goalie"
+    },
+    {
+      "name": "William Allen",
+      "position": "Midfield"
+    },
+    {
+      "name": "Nolan Jones",
+      "position": "Attack"
+    },
+    {
+      "name": "James Kelly",
+      "position": "Defense"
+    },
+    {
+      "name": "Camden Connolly",
+      "position": "Midfield"
     }
   ]
 }

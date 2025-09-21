@@ -70,13 +70,34 @@ class TeamRosterManager:
 
         for team_name in team_names:
             roster = []
-            # Create 10 players per team (matching your current logic)
-            # 3 Attack, 3 Midfield, 3 Defense, 1 Goalie
-            positions = ['Attack', 'Attack', 'Attack', 'Midfield', 'Midfield', 'Midfield',
-                        'Defense', 'Defense', 'Defense', 'Goalie']
+
+            # Create 25 players per team with minimum requirements:
+            # Minimum: 5 Attack, 5 Midfield, 5 Defense, 3 Goalie = 18 players
+            # Remaining 7 players: randomly distributed among positions
+
+            # Start with minimum required players
+            minimum_positions = (
+                ['Attack'] * 5 +
+                ['Midfield'] * 5 +
+                ['Defense'] * 5 +
+                ['Goalie'] * 3
+            )
+
+            # Add 7 more players with random positions (weighted distribution)
+            additional_positions = []
+            position_pool = ['Attack', 'Midfield', 'Defense', 'Goalie']
+            position_weights = [0.3, 0.4, 0.25, 0.05]  # Favor field players over goalies
+
+            for _ in range(7):
+                additional_pos = random.choices(position_pool, weights=position_weights)[0]
+                additional_positions.append(additional_pos)
+
+            # Combine all positions
+            all_positions = minimum_positions + additional_positions
+            random.shuffle(all_positions)  # Randomize order
 
             used_names = set()
-            for position in positions:
+            for position in all_positions:
                 # Generate unique names for each player
                 while True:
                     name = self.name_generator.generate_full_name()
@@ -192,10 +213,29 @@ class TeamRosterManager:
         for team_name in team_names:
             if team_name not in self.team_rosters:
                 needs_update = True
-                # Create roster for this team
+                # Create roster for this team with 25 players
                 roster = []
-                positions = ['Attack', 'Attack', 'Attack', 'Midfield', 'Midfield', 'Midfield',
-                            'Defense', 'Defense', 'Defense', 'Goalie']
+
+                # Minimum required players
+                minimum_positions = (
+                    ['Attack'] * 5 +
+                    ['Midfield'] * 5 +
+                    ['Defense'] * 5 +
+                    ['Goalie'] * 3
+                )
+
+                # Add 7 more players with random positions
+                additional_positions = []
+                position_pool = ['Attack', 'Midfield', 'Defense', 'Goalie']
+                position_weights = [0.3, 0.4, 0.25, 0.05]
+
+                for _ in range(7):
+                    additional_pos = random.choices(position_pool, weights=position_weights)[0]
+                    additional_positions.append(additional_pos)
+
+                # Combine and shuffle
+                all_positions = minimum_positions + additional_positions
+                random.shuffle(all_positions)
 
                 used_names = set()
                 # Get all existing names to avoid duplicates
@@ -203,7 +243,7 @@ class TeamRosterManager:
                     for player in existing_roster:
                         used_names.add(player['name'])
 
-                for position in positions:
+                for position in all_positions:
                     while True:
                         name = self.name_generator.generate_full_name()
                         if name not in used_names:
