@@ -11,9 +11,9 @@ class SeasonSimulator:
 
         self.main_gui.current_week += 1
 
-        if self.main_gui.current_week <= 12:
+        if self.main_gui.current_week <= 14:
             return self._simulate_regular_season_week()
-        elif self.main_gui.current_week <= 15:
+        elif self.main_gui.current_week <= 17:
             return self._simulate_playoff_week()
         else:
             return self._simulate_offseason_week()
@@ -25,7 +25,12 @@ class SeasonSimulator:
 
         while not self.main_gui.season_complete and week_count < max_weeks:
             old_week = self.main_gui.current_week
-            self.simulate_next_week()
+            result = self.simulate_next_week()
+
+            # Check if playoffs just started
+            if self.main_gui.current_week == 15 and hasattr(self.main_gui, 'tab_manager'):
+                self._show_playoff_tabs()
+
             if self.main_gui.current_week == old_week:
                 break
             week_count += 1
@@ -37,7 +42,7 @@ class SeasonSimulator:
         week_games = [game for game in self.main_gui.schedule if game.get('week') == self.main_gui.current_week]
 
         if not week_games:
-            if self.main_gui.current_week == 12:
+            if self.main_gui.current_week == 14:
                 return self._end_regular_season()
             else:
                 return f"Week {self.main_gui.current_week}: Some teams have bye weeks this week."
@@ -52,7 +57,7 @@ class SeasonSimulator:
         week_games = [game for game in self.main_gui.playoff_schedule if game.get('week') == self.main_gui.current_week]
 
         if not week_games:
-            if self.main_gui.current_week == 15:
+            if self.main_gui.current_week == 17:
                 self.main_gui.season_complete = True
                 return "Championship complete! Season finished."
             return f"No playoff games scheduled for week {self.main_gui.current_week}"
@@ -61,10 +66,10 @@ class SeasonSimulator:
 
     def _simulate_offseason_week(self):
         """Handle offseason weeks"""
-        if self.main_gui.current_week == 16:
-            return "Week 16: Offseason begins. Draft preparation in progress..."
-        elif self.main_gui.current_week == 17:
-            return "Week 17: Draft week. New players entering the league..."
+        if self.main_gui.current_week == 18:
+            return "Week 18: Offseason begins. Draft preparation in progress..."
+        elif self.main_gui.current_week == 19:
+            return "Week 19: Draft week. New players entering the league..."
         else:
             self.main_gui.season_complete = True
             return "Season cycle complete."
@@ -72,7 +77,16 @@ class SeasonSimulator:
     def _end_regular_season(self):
         """Handle end of regular season"""
         self.main_gui.playoff_schedule = self.main_gui.game_simulator.playoff_system.generate_playoff_schedule()
+
+        # Show playoff tabs
+        self._show_playoff_tabs()
+
         return f"Regular season complete! Playoff bracket generated.\n{self._get_playoff_bracket_text()}"
+
+    def _show_playoff_tabs(self):
+        """Show playoff tabs when playoffs begin"""
+        if hasattr(self.main_gui, 'tab_manager'):
+            self.main_gui.tab_manager.show_playoff_tabs()
 
     def _simulate_games(self, week_games, phase_name):
         """Simulate a list of games"""
@@ -112,7 +126,7 @@ class SeasonSimulator:
         game["away_score"] = match_result.away_score
         game["completed"] = True
 
-        if self.main_gui.current_week <= 12:
+        if self.main_gui.current_week <= 14:
             self._update_standings_from_match(home_team, away_team, match_result)
 
         overtime_text = " (OT)" if match_result.overtime else ""
@@ -144,7 +158,7 @@ class SeasonSimulator:
     def _update_status(self, phase_name):
         """Update GUI status"""
         status_text = f"Week {self.main_gui.current_week} {phase_name.lower()} simulated successfully"
-        if self.main_gui.current_week > 12:
+        if self.main_gui.current_week > 14:
             status_text += f" - {phase_name}"
         self.main_gui.status_var.set(status_text)
 

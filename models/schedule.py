@@ -2,123 +2,175 @@ import random
 from datetime import datetime, timedelta
 from models.team import Team
 
-def schedule_games_with_backtracking(all_matchups, team_names, weeks_count=12):
+def schedule_games_efficiently(all_matchups, team_names, weeks_count=14):
     """
-    Advanced constraint satisfaction scheduling with full backtracking
+    Efficient greedy scheduling algorithm that avoids backtracking complexity
     """
     print(f"\nScheduling {len(all_matchups)} games across {weeks_count} weeks...")
 
     # Initialize data structures
     weeks = [[] for _ in range(weeks_count)]
     team_week_schedule = {team: [False] * weeks_count for team in team_names}
-
-    def is_valid_assignment(game_idx, week):
-        """Check if assigning game at game_idx to week is valid"""
-        home, away = all_matchups[game_idx]
-
-        # Check if both teams are available
-        if team_week_schedule[home][week] or team_week_schedule[away][week]:
-            return False
-
-        # Check week capacity (max 8 games per week)
-        if len(weeks[week]) >= 8:
-            return False
-
-        return True
-
-    def assign_game(game_idx, week):
-        """Assign game to week"""
-        home, away = all_matchups[game_idx]
-        weeks[week].append((home, away))
-        team_week_schedule[home][week] = True
-        team_week_schedule[away][week] = True
-
-    def unassign_game(game_idx, week):
-        """Remove game from week"""
-        home, away = all_matchups[game_idx]
-        weeks[week].remove((home, away))
-        team_week_schedule[home][week] = False
-        team_week_schedule[away][week] = False
-
-    def get_game_flexibility(game_idx):
-        """Count how many weeks this game could be assigned to"""
-        count = 0
-        for week in range(weeks_count):
-            if is_valid_assignment(game_idx, week):
-                count += 1
-        return count
-
-    def backtrack(game_idx):
-        """Recursive backtracking to assign all games"""
-        if game_idx >= len(all_matchups):
-            return True  # All games assigned successfully
-
-        # Get current game flexibility and sort weeks by preference
-        available_weeks = []
-        for week in range(weeks_count):
-            if is_valid_assignment(game_idx, week):
-                # Prefer weeks with fewer games (load balancing)
-                available_weeks.append((len(weeks[week]), week))
-
-        # Sort by number of games in week (prefer less loaded weeks)
-        available_weeks.sort()
-
-        for _, week in available_weeks:
-            assign_game(game_idx, week)
-
-            if backtrack(game_idx + 1):
-                return True
-
-            unassign_game(game_idx, week)
-
-        return False  # This assignment doesn't work
-
-    # Sort games by constraint (least flexible first)
-    print("  Analyzing game constraints...")
-    game_flexibility = [(get_game_flexibility(i), i) for i in range(len(all_matchups))]
-    game_flexibility.sort()  # Most constrained games first
-
-    # Reorder matchups based on constraint level
-    ordered_matchups = [all_matchups[idx] for _, idx in game_flexibility]
-    all_matchups[:] = ordered_matchups
-
-    print(f"  Game flexibility range: {game_flexibility[0][0]} to {game_flexibility[-1][0]} available weeks")
-
-    # Attempt backtracking solution
-    print("  Attempting constraint satisfaction with backtracking...")
-    success = backtrack(0)
-
-    scheduled_games = sum(len(week) for week in weeks)
     failed_games = []
 
-    if not success:
-        print(f"  Backtracking failed to find complete solution")
-        # Identify which games couldn't be scheduled
-        scheduled_set = set()
-        for week in weeks:
-            scheduled_set.update(week)
+    # Categorize games by type for better scheduling order
+    intra_division_games = []
+    inter_division_games = []
+    inter_conference_games = []
 
-        for matchup in all_matchups:
-            if matchup not in scheduled_set:
-                failed_games.append(matchup)
+    # Team division mapping for categorization
+    team_divisions = {
+        "Buffalo Glacier": "Eastern_North", "Toronto Ironhawks": "Eastern_North",
+        "Montreal Sentries": "Eastern_North", "Boston Riptide": "Eastern_North",
+        "Richmond Rebellion": "Eastern_South", "Louisville Stampede": "Eastern_South",
+        "Atlanta Firewing": "Eastern_South", "Charlotte Thunder": "Eastern_South",
+        "Minneapolis Chill": "Western_North", "Calgary Nightwolves": "Western_North",
+        "Spokane Tempest": "Western_North", "Seattle Storm": "Western_North",
+        "San Jose Quakebirds": "Western_South", "Phoenix Dustrunners": "Western_South",
+        "El Paso Vortex": "Western_South", "Denver Rapids": "Western_South"
+    }
 
+    team_conferences = {
+        "Buffalo Glacier": "Eastern", "Toronto Ironhawks": "Eastern",
+        "Montreal Sentries": "Eastern", "Boston Riptide": "Eastern",
+        "Richmond Rebellion": "Eastern", "Louisville Stampede": "Eastern",
+        "Atlanta Firewing": "Eastern", "Charlotte Thunder": "Eastern",
+        "Minneapolis Chill": "Western", "Calgary Nightwolves": "Western",
+        "Spokane Tempest": "Western", "Seattle Storm": "Western",
+        "San Jose Quakebirds": "Western", "Phoenix Dustrunners": "Western",
+        "El Paso Vortex": "Western", "Denver Rapids": "Western"
+    }
+
+    # Categorize games
+    for home, away in all_matchups:
+        home_div = team_divisions.get(home, "")
+        away_div = team_divisions.get(away, "")
+        home_conf = team_conferences.get(home, "")
+        away_conf = team_conferences.get(away, "")
+
+        if home_div == away_div:
+            intra_division_games.append((home, away))
+        elif home_conf == away_conf:
+            inter_division_games.append((home, away))
+        else:
+            inter_conference_games.append((home, away))
+
+    print(f"  Categorized: {len(intra_division_games)} intra-division, {len(inter_division_games)} inter-division, {len(inter_conference_games)} inter-conference")
+
+    def get_available_weeks(team1, team2):
+        """Get weeks where both teams are available"""
+        available = []
+        for week in range(weeks_count):
+            if (not team_week_schedule[team1][week] and
+                not team_week_schedule[team2][week] and
+                len(weeks[week]) < 8):  # Max 8 games per week
+                available.append(week)
+        return available
+
+    def schedule_game(home, away):
+        """Try to schedule a single game using greedy approach"""
+        available_weeks = get_available_weeks(home, away)
+
+        if not available_weeks:
+            return False
+
+        # Choose week with fewest games (load balancing) but prefer earlier weeks
+        best_week = min(available_weeks, key=lambda w: (len(weeks[w]), w))
+
+        # Schedule the game
+        weeks[best_week].append((home, away))
+        team_week_schedule[home][best_week] = True
+        team_week_schedule[away][best_week] = True
+        return True
+
+    # PHASE 1: Schedule inter-conference games first (most constrained)
+    print("  Phase 1: Scheduling inter-conference games...")
+    scheduled_inter_conf = 0
+
+    # Shuffle for randomness but maintain deterministic within categories
+    import random
+    random.shuffle(inter_conference_games)
+
+    for home, away in inter_conference_games:
+        if schedule_game(home, away):
+            scheduled_inter_conf += 1
+        else:
+            failed_games.append((home, away))
+
+    print(f"    Scheduled {scheduled_inter_conf}/{len(inter_conference_games)} inter-conference games")
+
+    # PHASE 2: Schedule inter-division conference games
+    print("  Phase 2: Scheduling inter-division conference games...")
+    scheduled_inter_div = 0
+
+    random.shuffle(inter_division_games)
+
+    for home, away in inter_division_games:
+        if schedule_game(home, away):
+            scheduled_inter_div += 1
+        else:
+            failed_games.append((home, away))
+
+    print(f"    Scheduled {scheduled_inter_div}/{len(inter_division_games)} inter-division games")
+
+    # PHASE 3: Schedule intra-division games (most flexible)
+    print("  Phase 3: Scheduling intra-division games...")
+    scheduled_intra_div = 0
+
+    random.shuffle(intra_division_games)
+
+    for home, away in intra_division_games:
+        if schedule_game(home, away):
+            scheduled_intra_div += 1
+        else:
+            failed_games.append((home, away))
+
+    print(f"    Scheduled {scheduled_intra_div}/{len(intra_division_games)} intra-division games")
+
+    # PHASE 4: Try to rescue failed games with simple rescheduling
+    if failed_games:
+        print(f"  Phase 4: Attempting to reschedule {len(failed_games)} failed games...")
+
+        rescued_games = []
+        for home, away in failed_games[:]:
+            # Try to find any available slot by checking if we can move existing games
+            for week in range(weeks_count):
+                if len(weeks[week]) < 8:  # Week not full
+                    # Check if both teams are available
+                    if not team_week_schedule[home][week] and not team_week_schedule[away][week]:
+                        weeks[week].append((home, away))
+                        team_week_schedule[home][week] = True
+                        team_week_schedule[away][week] = True
+                        rescued_games.append((home, away))
+                        break
+
+        # Remove rescued games from failed list
+        for game in rescued_games:
+            failed_games.remove(game)
+
+        print(f"    Rescued {len(rescued_games)} games")
+
+    scheduled_games = len(all_matchups) - len(failed_games)
     print(f"Successfully scheduled: {scheduled_games} out of {len(all_matchups)} games")
 
     if failed_games:
         print(f"Failed to schedule {len(failed_games)} games:")
-        for home, away in failed_games:
+        for home, away in failed_games[:5]:  # Show first 5 only
             print(f"  {home} vs {away}")
+        if len(failed_games) > 5:
+            print(f"  ... and {len(failed_games) - 5} more")
 
     return weeks, team_week_schedule, failed_games
 
 def build_season_schedule(teams, start_date="2025-06-01"):
     """
-    Build a 10-game conference-only schedule over 12 weeks.
+    Build a 12-game conference schedule over 14 weeks.
     Each team plays:
     - 6 games vs division opponents (play each of 3 other teams twice - home and away)
     - 4 games vs other division in same conference (play each team once)
+    - 2 games vs inter-conference opponents
     - 2 bye weeks
-    Total: 10 games per team, 80 total games
+    Total: 12 games per team, 96 total games
     """
 
     # Map team names to their conference/division
@@ -215,7 +267,34 @@ def build_season_schedule(teams, start_date="2025-06-01"):
             inter_division_total += 1
 
     print(f"Total inter-division games: {inter_division_total}")
-    print("NO inter-conference games - staying within conferences only")
+
+    # 3. Inter-conference games (2 games per team)
+    print("\nGenerating inter-conference games...")
+    inter_conference_total = 0
+
+    # Create a rotation for inter-conference matchups
+    # Eastern North vs Western divisions (2 games each)
+    en_matchups = [
+        (eastern_north[0], western_north[0]), (eastern_north[0], western_south[0]),  # Buffalo
+        (eastern_north[1], western_north[1]), (eastern_north[1], western_south[1]),  # Toronto
+        (eastern_north[2], western_north[2]), (eastern_north[2], western_south[2]),  # Montreal
+        (eastern_north[3], western_north[3]), (eastern_north[3], western_south[3])   # Boston
+    ]
+
+    # Eastern South vs Western divisions (2 games each)
+    es_matchups = [
+        (eastern_south[0], western_south[1]), (eastern_south[0], western_north[1]),  # Richmond
+        (eastern_south[1], western_south[2]), (eastern_south[1], western_north[2]),  # Louisville
+        (eastern_south[2], western_south[3]), (eastern_south[2], western_north[3]),  # Atlanta
+        (eastern_south[3], western_south[0]), (eastern_south[3], western_north[0])   # Charlotte
+    ]
+
+    for matchup in en_matchups + es_matchups:
+        all_matchups.append(matchup)
+        inter_conference_total += 1
+
+    print(f"Total inter-conference games: {inter_conference_total}")
+    print(f"Each team plays 2 inter-conference opponents")
 
     # Verify matchup count
     team_game_count = {}
@@ -224,13 +303,13 @@ def build_season_schedule(teams, start_date="2025-06-01"):
         team_game_count[away] = team_game_count.get(away, 0) + 1
 
     print(f"\nMatchup verification:")
-    print(f"Total matchups generated: {len(all_matchups)} (should be 80)")
+    print(f"Total matchups generated: {len(all_matchups)} (should be 96)")
 
     all_teams_correct = True
     for team in sorted(team_names):
         count = team_game_count.get(team, 0)
-        if count != 10:
-            print(f"  ERROR: {team} has {count} games instead of 10!")
+        if count != 12:
+            print(f"  ERROR: {team} has {count} games instead of 12!")
             all_teams_correct = False
         else:
             print(f"  {team}: {count} games ✓")
@@ -239,8 +318,8 @@ def build_season_schedule(teams, start_date="2025-06-01"):
         print("ERROR: Matchup generation failed!")
         return []
 
-    # ADVANCED SCHEDULING using backtracking constraint satisfaction
-    weeks, team_week_schedule, failed_games = schedule_games_with_backtracking(all_matchups, team_names, 12)
+    # EFFICIENT SCHEDULING using greedy approach (NOW WITH 14 WEEKS)
+    weeks, team_week_schedule, failed_games = schedule_games_efficiently(all_matchups, team_names, 14)
 
     # Generate final schedule with dates
     schedule = []
@@ -264,14 +343,14 @@ def build_season_schedule(teams, start_date="2025-06-01"):
         final_team_count[home] = final_team_count.get(home, 0) + 1
         final_team_count[away] = final_team_count.get(away, 0) + 1
 
-    print(f"\nFinal schedule: {len(schedule)} total games across 12 weeks")
+    print(f"\nFinal schedule: {len(schedule)} total games across 14 weeks")
     print(f"Games per week: {[len(week) for week in weeks]}")
 
     # Calculate bye weeks for each team
     print(f"\nBye week analysis:")
     for team in sorted(team_names):
         bye_weeks = []
-        for week in range(12):
+        for week in range(14):
             if not team_week_schedule[team][week]:
                 bye_weeks.append(week + 1)
         print(f"  {team}: {len(bye_weeks)} bye weeks {bye_weeks}")
@@ -280,14 +359,14 @@ def build_season_schedule(teams, start_date="2025-06-01"):
     all_correct = True
     for team in sorted(team_names):
         count = final_team_count.get(team, 0)
-        if count != 10:
-            print(f"  ERROR: {team} has {count} games (should be 10)")
+        if count != 12:
+            print(f"  ERROR: {team} has {count} games (should be 12)")
             all_correct = False
         else:
             print(f"  {team}: {count} games ✓")
 
     if all_correct:
-        print("\nSUCCESS: All teams have exactly 10 games with 2 bye weeks each!")
+        print("\nSUCCESS: All teams have exactly 12 games with 2 bye weeks each!")
     else:
         print("\nERROR: Schedule generation failed!")
 

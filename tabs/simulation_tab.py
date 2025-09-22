@@ -17,10 +17,10 @@ class SimulationTab:
         self.week_label = ttk.Label(week_info_frame, text="Current Week: 0", font=("Arial", 12, "bold"))
         self.week_label.pack(pady=5)
 
-        self.season_progress = ttk.Progressbar(week_info_frame, length=400, mode='determinate', maximum=15)
+        self.season_progress = ttk.Progressbar(week_info_frame, length=400, mode='determinate', maximum=17)
         self.season_progress.pack(pady=5)
 
-        self.progress_label = ttk.Label(week_info_frame, text="Regular Season: 0/12 weeks", font=("Arial", 10))
+        self.progress_label = ttk.Label(week_info_frame, text="Regular Season: 0/14 weeks", font=("Arial", 10))
         self.progress_label.pack(pady=2)
 
         # Control buttons
@@ -52,6 +52,10 @@ class SimulationTab:
             self.recent_games_text.delete(1.0, tk.END)
             self.recent_games_text.insert(tk.END, results_text)
 
+        # Check if playoffs just started
+        if self.main_gui.current_week == 15 and hasattr(self.main_gui, 'tab_manager'):
+            self.main_gui.tab_manager.show_playoff_tabs()
+
         # Update displays
         self.week_label.config(text=f"Current Week: {self.main_gui.current_week}")
         self.season_progress['value'] = self.main_gui.current_week
@@ -81,20 +85,25 @@ class SimulationTab:
             self.main_gui.game_simulator.reset_season()
             self.week_label.config(text="Current Week: 0")
             self.season_progress['value'] = 0
-            self.progress_label.config(text="Regular Season: 0/12 weeks")
+            self.progress_label.config(text="Regular Season: 0/14 weeks")
             self.recent_games_text.delete(1.0, tk.END)
+
+            # Hide playoff tabs
+            if hasattr(self.main_gui, 'tab_manager'):
+                self.main_gui.tab_manager.hide_playoff_tabs()
+
             self.main_gui.update_all_displays()
 
     def _update_progress_label(self):
         """Update the progress label with detailed season info"""
         current_week = self.main_gui.current_week
 
-        if current_week <= 12:
+        if current_week <= 14:
             # Regular season
-            self.progress_label.config(text=f"Regular Season: {current_week}/12 weeks")
-        elif current_week <= 15:
+            self.progress_label.config(text=f"Regular Season: {current_week}/14 weeks")
+        elif current_week <= 17:
             # Playoffs
-            playoff_week = current_week - 12
+            playoff_week = current_week - 14
             self.progress_label.config(text=f"Playoffs: {playoff_week}/3 weeks (Regular season complete)")
         else:
             # Offseason
