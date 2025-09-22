@@ -70,7 +70,14 @@ def team_shooting_accuracy(team: Team) -> float:
     accuracy = base_accuracy * (avg_shooting / 100) * (1.0 - avg_defense / 150)
     return max(0.15, min(accuracy, 0.40))
 
-def simulate_match(home_team: Team, away_team: Team) -> MatchResult:
+def simulate_match(home_team: Team, away_team: Team, game_duration_minutes: int = 60) -> MatchResult:
+    # NEW: Track games played and minutes for all players
+    for player in home_team.players + away_team.players:
+        player.increment_games_played()
+        # Add minutes played for goalies
+        if player.position == "Goalie":
+            player.add_minutes_played(game_duration_minutes)
+
     avg_shots = 43
     home_shots = max(30, int(random.gauss(avg_shots, 5)))
     away_shots = max(30, int(random.gauss(avg_shots, 5)))
@@ -83,9 +90,11 @@ def simulate_match(home_team: Team, away_team: Team) -> MatchResult:
 
     # Reset match stats for players before the match starts
     for player in home_team.players + away_team.players:
-        player.goals_match = 0
-        player.assists_match = 0
-        player.saves_match = 0
+        player.reset_match_stats()
+
+    # NEW: Get goalies for goals against tracking
+    home_goalies = [p for p in home_team.players if p.position == "Goalie"]
+    away_goalies = [p for p in away_team.players if p.position == "Goalie"]
 
     for _ in range(home_shots):
         if random.random() < home_accuracy:
@@ -93,6 +102,11 @@ def simulate_match(home_team: Team, away_team: Team) -> MatchResult:
             scorer = weighted_random_player(home_team.players, ["Attack", "Midfield"])
             scorer.goals += 1
             scorer.goals_match += 1
+
+            # NEW: Add goal against to opposing goalies
+            for goalie in away_goalies:
+                goalie.add_goal_against()
+
             assister = weighted_random_assister(home_team.players, scorer)
             if assister:
                 assister.assists += 1
@@ -104,6 +118,11 @@ def simulate_match(home_team: Team, away_team: Team) -> MatchResult:
             scorer = weighted_random_player(away_team.players, ["Attack", "Midfield"])
             scorer.goals += 1
             scorer.goals_match += 1
+
+            # NEW: Add goal against to opposing goalies
+            for goalie in home_goalies:
+                goalie.add_goal_against()
+
             assister = weighted_random_assister(away_team.players, scorer)
             if assister:
                 assister.assists += 1
@@ -142,7 +161,11 @@ def simulate_match(home_team: Team, away_team: Team) -> MatchResult:
     if home_goals == away_goals:
         # Overtime simulation - sudden death until winner scores
         overtime = True
+        ot_minutes = 0  # Track OT time
+
         while True:
+            ot_minutes += 1  # Each loop is roughly 1 minute of OT
+
             for offense_team, defense_team in [(home_team, away_team), (away_team, home_team)]:
                 if random.random() < 0.5:  # 50% chance to get shot in OT
                     scorer = weighted_random_player(offense_team.players, ["Attack", "Midfield"])
@@ -150,10 +173,22 @@ def simulate_match(home_team: Team, away_team: Team) -> MatchResult:
                     if random.random() < ot_accuracy:
                         if offense_team == home_team:
                             home_goals += 1
+                            # NEW: Add goal against to away goalies
+                            for goalie in away_goalies:
+                                goalie.add_goal_against()
                         else:
                             away_goals += 1
+                            # NEW: Add goal against to home goalies
+                            for goalie in home_goalies:
+                                goalie.add_goal_against()
+
                         scorer.goals += 1
                         scorer.goals_match += 1
+
+                        # NEW: Add OT minutes to all goalies
+                        for goalie in home_goalies + away_goalies:
+                            goalie.add_minutes_played(ot_minutes)
+
                         # Winner is offense_team, loser is defense_team
                         if offense_team == home_team:
                             home_team.wins += 1

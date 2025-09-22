@@ -15,6 +15,7 @@ from tabs.stats_tab import StatsTab
 
 # Import utilities
 from utils.game_simulation import GameSimulator
+from data_manager import DataManager
 
 class LacrosseSimGUI:
     def __init__(self, root):
@@ -29,7 +30,7 @@ class LacrosseSimGUI:
         self.schedule = []
         self.standings = {}
 
-        # Team names and divisions
+        # Team names organized by conference and division
         self.teams_names = [
             "Buffalo Glacier", "Richmond Rebellion", "Louisville Stampede",
             "Minneapolis Chill", "Phoenix Dustrunners", "San Jose Quakebirds",
@@ -37,21 +38,47 @@ class LacrosseSimGUI:
             "Spokane Tempest", "El Paso Vortex", "Atlanta Firewing"
         ]
 
-        self.divisions = {
-            "East North": ["Buffalo Glacier", "Toronto Ironhawks", "Montreal Sentries"],
-            "East South": ["Richmond Rebellion", "Louisville Stampede", "Atlanta Firewing"],
-            "West North": ["Minneapolis Chill", "Calgary Nightwolves", "Spokane Tempest"],
-            "West South": ["San Jose Quakebirds", "Phoenix Dustrunners", "El Paso Vortex"]
+        # Conference and division structure
+        self.conferences = {
+            "Eastern": {
+                "North": ["Buffalo Glacier", "Toronto Ironhawks", "Montreal Sentries"],
+                "South": ["Richmond Rebellion", "Louisville Stampede", "Atlanta Firewing"]
+            },
+            "Western": {
+                "North": ["Minneapolis Chill", "Calgary Nightwolves", "Spokane Tempest"],
+                "South": ["San Jose Quakebirds", "Phoenix Dustrunners", "El Paso Vortex"]
+            }
         }
+
+        # Flat divisions for compatibility with existing code
+        self.divisions = {
+            "Eastern North": self.conferences["Eastern"]["North"],
+            "Eastern South": self.conferences["Eastern"]["South"],
+            "Western North": self.conferences["Western"]["North"],
+            "Western South": self.conferences["Western"]["South"]
+        }
+
+        self.regular_season_weeks = 13
+        self.playoff_weeks = 3
+        self.total_season_weeks = 16
+        self.playoff_teams = []
+        self.playoff_schedule = []
+        self.conference_standings = {}
 
         # Initialize game simulator
         self.game_simulator = GameSimulator(self)
 
+        # Setup UI first
         self.setup_ui()
+
+        # Initialize game
         self.initialize_game()
 
+        # Initialize data manager AFTER everything else is set up
+        self.data_manager = DataManager(self)
+
     def setup_ui(self):
-        # Create main menu bar
+        # Create main menu bar (FIXED VERSION)
         self.setup_menu()
 
         # Create main frame with notebook for tabs
@@ -76,15 +103,21 @@ class LacrosseSimGUI:
         status_bar.pack(side=tk.BOTTOM, fill=tk.X)
 
     def setup_menu(self):
+        """Create the main menu bar"""
         menubar = tk.Menu(self.root)
         self.root.config(menu=menubar)
 
         # File menu
         file_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="File", menu=file_menu)
+
         file_menu.add_command(label="New Season", command=self.new_season)
-        file_menu.add_command(label="Save Game", command=self.save_game)
-        file_menu.add_command(label="Load Game", command=self.load_game)
+        file_menu.add_separator()
+        file_menu.add_command(label="Save League (New)", command=self.save_league)
+        file_menu.add_command(label="Load League (New)", command=self.load_league)
+        file_menu.add_separator()
+        file_menu.add_command(label="Save Game (Old)", command=self.save_game)
+        file_menu.add_command(label="Load Game (Old)", command=self.load_game)
         file_menu.add_separator()
         file_menu.add_command(label="Exit", command=self.root.quit)
 
@@ -104,13 +137,67 @@ class LacrosseSimGUI:
         self.roster_tab.update_display()
         self.stats_tab.update_display()
 
+    def get_team_conference(self, team_name):
+        """Get the conference for a team"""
+        for conference, divisions in self.conferences.items():
+            for division, teams in divisions.items():
+                if team_name in teams:
+                    return conference
+        return "Unknown"
+
+    def get_team_division(self, team_name):
+        """Get the division for a team (returns simple name like 'North' or 'South')"""
+        for conference, divisions in self.conferences.items():
+            for division, teams in divisions.items():
+                if team_name in teams:
+                    return division
+        return "Unknown"
+
+    def get_team_full_division(self, team_name):
+        """Get the full division name for a team (e.g., 'Eastern North')"""
+        for div_name, teams in self.divisions.items():
+            if team_name in teams:
+                return div_name
+        return "Unknown"
+
+    def get_conference_teams(self, conference):
+        """Get all teams in a conference"""
+        if conference in self.conferences:
+            teams = []
+            for division, team_list in self.conferences[conference].items():
+                teams.extend(team_list)
+            return teams
+        return []
+
+    def get_division_teams(self, conference, division):
+        """Get teams in a specific conference division"""
+        if conference in self.conferences and division in self.conferences[conference]:
+            return self.conferences[conference][division]
+        return []
+
     def new_season(self):
         """Start a new season"""
         self.game_simulator.reset_season()
         messagebox.showinfo("New Season", "New season started!")
 
+    # NEW SAVE/LOAD METHODS (using DataManager)
+    def save_league(self):
+        """Save current league data using new system"""
+        if hasattr(self, 'data_manager'):
+            return self.data_manager.save_league_data()
+        else:
+            messagebox.showerror("Error", "Data manager not initialized")
+
+    def load_league(self):
+        """Load league data from file using new system"""
+        if hasattr(self, 'data_manager'):
+            return self.data_manager.load_league_data()
+        else:
+            messagebox.showerror("Error", "Data manager not initialized")
+
+    # OLD SAVE/LOAD METHODS (keep for compatibility)
     def save_game(self):
-        """Save the current game state"""
+        """Save the current game state (old method)"""
         try:
             save_data = self.game_simulator.get_save_data()
             with open("lacrosse_save.json", "w") as f:
@@ -120,7 +207,7 @@ class LacrosseSimGUI:
             messagebox.showerror("Save Error", f"Error saving game: {str(e)}")
 
     def load_game(self):
-        """Load a saved game state"""
+        """Load a saved game state (old method)"""
         try:
             if os.path.exists("lacrosse_save.json"):
                 with open("lacrosse_save.json", "r") as f:
@@ -133,12 +220,10 @@ class LacrosseSimGUI:
         except Exception as e:
             messagebox.showerror("Load Error", f"Error loading game: {str(e)}")
 
-
 def main():
     root = tk.Tk()
     app = LacrosseSimGUI(root)
     root.mainloop()
-
 
 if __name__ == "__main__":
     main()

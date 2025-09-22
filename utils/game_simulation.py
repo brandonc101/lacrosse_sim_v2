@@ -3,10 +3,12 @@ from models.player import Player
 from models.team import Team
 from models.match import simulate_match  # Use your advanced match simulation
 from lacrosse_names import roster_manager
+from utils.playoff_system import PlayoffSystem
 
 class GameSimulator:
     def __init__(self, main_gui):
         self.main_gui = main_gui
+        self.playoff_system = PlayoffSystem(self.main_gui)
 
     def create_teams(self, team_names):
         """Create teams with players"""
@@ -92,14 +94,25 @@ class GameSimulator:
             "shooting": (50, 80), "passing": (50, 80),
             "defense": (50, 80), "stamina": (50, 80)
         })
+
     def _initialize_player_stats(self, player):
         """Initialize player statistics that match.py expects"""
+        # Existing stats
         player.goals = 0
         player.assists = 0
         player.saves = 0
         player.goals_match = 0
         player.assists_match = 0
         player.saves_match = 0
+
+        # NEW: Initialize new tracking stats
+        player.games_played = 0
+
+        # Goalie-specific stats
+        if player.position == "Goalie":
+            player.goals_against = 0
+            player.minutes_played = 0
+            player.goals_against_match = 0
 
     def generate_schedule(self):
         """Generate schedule using the advanced scheduling system"""
@@ -178,24 +191,78 @@ class GameSimulator:
         return "Unknown"
 
     def simulate_next_week(self):
-        """Simulate the next week of games using advanced match simulation"""
+        """Simulate the next week of games including playoffs"""
         if self.main_gui.season_complete:
             return None
 
         self.main_gui.current_week += 1
+
+        # Handle different phases of the season
+        if self.main_gui.current_week <= 13:
+            # Regular season
+            return self._simulate_regular_season_week()
+        elif self.main_gui.current_week <= 16:
+            # Playoffs
+            return self._simulate_playoff_week()
+        else:
+            # Offseason (weeks 17-18)
+            return self._simulate_offseason_week()
+
+    def _simulate_regular_season_week(self):
+        """Simulate a regular season week"""
         week_games = [game for game in self.main_gui.schedule
                      if game.get('week') == self.main_gui.current_week]
 
         if not week_games:
-            self.main_gui.season_complete = True
-            self.main_gui.status_var.set("Season Complete")
-            return None
+            # End of regular season, generate playoffs
+            self.main_gui.playoff_schedule = self.playoff_system.generate_playoff_schedule()
+            return f"Regular season complete! Playoff bracket generated.\n{self._get_playoff_bracket_text()}"
 
-        results_text = f"Week {self.main_gui.current_week} Results:\n" + "="*50 + "\n"
+        return self._simulate_games(week_games, "Regular Season")
+
+    def _simulate_playoff_week(self):
+        """Simulate a playoff week"""
+        if not hasattr(self.main_gui, 'playoff_schedule') or not self.main_gui.playoff_schedule:
+            self.main_gui.playoff_schedule = self.playoff_system.generate_playoff_schedule()
+
+        week_games = [game for game in self.main_gui.playoff_schedule
+                     if game.get('week') == self.main_gui.current_week]
+
+        if not week_games:
+            if self.main_gui.current_week == 16:
+                self.main_gui.season_complete = True
+                return "Championship complete! Season finished."
+            return f"No playoff games scheduled for week {self.main_gui.current_week}"
+
+        results = self._simulate_games(week_games, "Playoffs")
+
+        # Update playoff bracket for next week
+        self.playoff_system.update_playoff_bracket(self.main_gui.current_week)
+
+        return results
+
+    def _simulate_offseason_week(self):
+        """Handle offseason weeks"""
+        if self.main_gui.current_week == 17:
+            return "Week 17: Offseason begins. Draft preparation in progress..."
+        elif self.main_gui.current_week == 18:
+            return "Week 18: Draft week. New players entering the league..."
+        else:
+            self.main_gui.season_complete = True
+            return "Season cycle complete."
+
+    def _simulate_games(self, week_games, phase_name):
+        """Simulate a list of games"""
+        results_text = f"Week {self.main_gui.current_week} {phase_name} Results:\n" + "="*50 + "\n"
 
         for game in week_games:
             home_team_name = game['home_team']
             away_team_name = game['away_team']
+
+            # Skip TBD games
+            if "TBD" in home_team_name or "TBD" in away_team_name:
+                results_text += f"{game.get('round', 'Game')}: {away_team_name} @ {home_team_name}\n"
+                continue
 
             home_team = None
             away_team = None
@@ -212,15 +279,47 @@ class GameSimulator:
                 game["away_score"] = match_result.away_score
                 game["completed"] = True
 
-                self._update_standings_from_match(home_team, away_team, match_result)
+                if self.main_gui.current_week <= 13:
+                    # Only update standings during regular season
+                    self._update_standings_from_match(home_team, away_team, match_result)
 
                 overtime_text = " (OT)" if match_result.overtime else ""
                 winner = home_team_name if match_result.home_score > match_result.away_score else away_team_name
+
+                round_text = game.get('round', '')
+                if round_text:
+                    results_text += f"{round_text}: "
+
                 results_text += f"{away_team_name} @ {home_team_name}: {match_result.away_score}-{match_result.home_score}{overtime_text} (Winner: {winner})\n"
                 results_text += f"  Shots: {home_team_name} {match_result.home_shots}, {away_team_name} {match_result.away_shots}\n"
 
-        self.main_gui.status_var.set(f"Week {self.main_gui.current_week} simulated successfully")
+        status_text = f"Week {self.main_gui.current_week} {phase_name.lower()} simulated successfully"
+        if self.main_gui.current_week > 13:
+            status_text += f" - {phase_name}"
+
+        self.main_gui.status_var.set(status_text)
         return results_text
+
+    def _get_playoff_bracket_text(self):
+        """Generate text representation of playoff bracket"""
+        playoff_teams = self.playoff_system.determine_playoff_teams()
+
+        eastern_teams = [t for t in playoff_teams if self.playoff_system.get_conference_from_division(t['division']) == 'Eastern']
+        western_teams = [t for t in playoff_teams if self.playoff_system.get_conference_from_division(t['division']) == 'Western']
+
+        eastern_teams.sort(key=lambda x: (x['win_pct'], x['point_diff']), reverse=True)
+        western_teams.sort(key=lambda x: (x['win_pct'], x['point_diff']), reverse=True)
+
+        bracket_text = "\nPLAYOFF BRACKET:\n"
+        bracket_text += "Eastern Conference:\n"
+        for i, team in enumerate(eastern_teams, 1):
+            bracket_text += f"  {i}. {team['name']} ({team['wins']}-{team['losses']})\n"
+
+        bracket_text += "\nWestern Conference:\n"
+        for i, team in enumerate(western_teams, 1):
+            bracket_text += f"  {i}. {team['name']} ({team['wins']}-{team['losses']})\n"
+
+        return bracket_text
 
     def _update_standings_from_match(self, home_team, away_team, match_result):
         """Update standings using the advanced team stats from match.py"""

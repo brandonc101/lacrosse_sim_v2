@@ -42,25 +42,25 @@ class ScheduleTab:
         scrollbar_schedule.pack(side=tk.RIGHT, fill=tk.Y)
 
     def update_display(self, event=None):
-        """Update the schedule display"""
-        # Clear existing data
+        """Update the schedule display including playoffs"""
         for item in self.schedule_tree.get_children():
             self.schedule_tree.delete(item)
 
-        # Get selected week
         selected_week = self.week_combobox.get()
 
-        # Show games
+        # Show regular season games
         for game in self.main_gui.schedule:
             week = game.get('week', 'Unknown')
-            date = game.get('date', 'TBD')  # Show actual date if available
+            if week > 13:  # Skip weeks beyond regular season
+                continue
+
+            date = game.get('date', 'TBD')
             home_team = game.get('home_team', 'Unknown')
             away_team = game.get('away_team', 'Unknown')
             home_score = game.get('home_score')
             away_score = game.get('away_score')
             completed = game.get('completed', False)
 
-            # Filter by week if selected
             if selected_week != "All Weeks" and f"Week {week}" != selected_week:
                 continue
 
@@ -79,3 +79,34 @@ class ScheduleTab:
                 score,
                 status
             ))
+
+        # Show playoff games
+        if hasattr(self.main_gui, 'playoff_schedule') and self.main_gui.playoff_schedule:
+            for game in self.main_gui.playoff_schedule:
+                week = game.get('week', 'Unknown')
+                round_name = game.get('round', 'Playoff Game')
+                home_team = game.get('home_team', 'TBD')
+                away_team = game.get('away_team', 'TBD')
+                home_score = game.get('home_score')
+                away_score = game.get('away_score')
+                completed = game.get('completed', False)
+
+                if selected_week != "All Weeks" and f"Week {week}" != selected_week:
+                    continue
+
+                if completed and home_score is not None and away_score is not None:
+                    score = f"{away_score}-{home_score}"
+                    status = "Final"
+                else:
+                    score = "vs"
+                    status = "Scheduled"
+
+                # Use round name as "date" for playoffs
+                self.schedule_tree.insert("", tk.END, values=(
+                    f"Week {week}",
+                    round_name,
+                    home_team,
+                    away_team,
+                    score,
+                    status
+                ))
