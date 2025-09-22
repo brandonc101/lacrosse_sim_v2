@@ -4,7 +4,7 @@ from models.team import Team
 
 def schedule_games_efficiently(all_matchups, team_names, weeks_count=14):
     """
-    Efficient greedy scheduling algorithm that avoids backtracking complexity
+    Enhanced scheduling algorithm with better week utilization
     """
     print(f"\nScheduling {len(all_matchups)} games across {weeks_count} weeks...")
 
@@ -67,15 +67,23 @@ def schedule_games_efficiently(all_matchups, team_names, weeks_count=14):
                 available.append(week)
         return available
 
-    def schedule_game(home, away):
-        """Try to schedule a single game using greedy approach"""
+    def schedule_game_optimized(home, away):
+        """Try to schedule a single game with optimized week selection"""
         available_weeks = get_available_weeks(home, away)
 
         if not available_weeks:
             return False
 
-        # Choose week with fewest games (load balancing) but prefer earlier weeks
-        best_week = min(available_weeks, key=lambda w: (len(weeks[w]), w))
+        # Strategy: Fill weeks more evenly - prefer weeks with fewer than 7 games
+        # This helps utilize capacity better
+        weeks_under_capacity = [w for w in available_weeks if len(weeks[w]) < 7]
+
+        if weeks_under_capacity:
+            # Among under-capacity weeks, choose one with most games (but still under 7)
+            best_week = max(weeks_under_capacity, key=lambda w: len(weeks[w]))
+        else:
+            # All available weeks have 7 games, pick the first one
+            best_week = available_weeks[0]
 
         # Schedule the game
         weeks[best_week].append((home, away))
@@ -83,72 +91,110 @@ def schedule_games_efficiently(all_matchups, team_names, weeks_count=14):
         team_week_schedule[away][best_week] = True
         return True
 
-    # PHASE 1: Schedule inter-conference games first (most constrained)
-    print("  Phase 1: Scheduling inter-conference games...")
-    scheduled_inter_conf = 0
+    def force_schedule_with_swapping(home, away):
+        """Try to force schedule by swapping existing games"""
+        # Find weeks where at least one team is free
+        candidate_weeks = []
+        for week in range(weeks_count):
+            if len(weeks[week]) < 8:  # Not at maximum capacity
+                teams_busy = set()
+                if team_week_schedule[home][week]:
+                    teams_busy.add(home)
+                if team_week_schedule[away][week]:
+                    teams_busy.add(away)
 
-    # Shuffle for randomness but maintain deterministic within categories
-    import random
-    random.shuffle(inter_conference_games)
+                if len(teams_busy) <= 1:  # At most one team is busy
+                    candidate_weeks.append((week, teams_busy))
 
-    for home, away in inter_conference_games:
-        if schedule_game(home, away):
-            scheduled_inter_conf += 1
-        else:
-            failed_games.append((home, away))
+        # Try to swap games to make room
+        for week, busy_teams in candidate_weeks:
+            if not busy_teams:
+                # Both teams are free, schedule directly
+                weeks[week].append((home, away))
+                team_week_schedule[home][week] = True
+                team_week_schedule[away][week] = True
+                return True
 
-    print(f"    Scheduled {scheduled_inter_conf}/{len(inter_conference_games)} inter-conference games")
+            # One team is busy - try to move their game
+            busy_team = list(busy_teams)[0]
 
-    # PHASE 2: Schedule inter-division conference games
-    print("  Phase 2: Scheduling inter-division conference games...")
-    scheduled_inter_div = 0
+            # Find the game involving the busy team
+            for i, (game_home, game_away) in enumerate(weeks[week]):
+                if busy_team in (game_home, game_away):
+                    # Try to move this game to another week
+                    other_team = game_away if game_home == busy_team else game_home
 
-    random.shuffle(inter_division_games)
+                    # Find alternative weeks for this game
+                    alt_weeks = get_available_weeks(game_home, game_away)
+                    alt_weeks = [w for w in alt_weeks if w != week]
 
-    for home, away in inter_division_games:
-        if schedule_game(home, away):
-            scheduled_inter_div += 1
-        else:
-            failed_games.append((home, away))
+                    if alt_weeks:
+                        # Move the conflicting game
+                        new_week = min(alt_weeks, key=lambda w: len(weeks[w]))
 
-    print(f"    Scheduled {scheduled_inter_div}/{len(inter_division_games)} inter-division games")
+                        # Remove from current week
+                        weeks[week].pop(i)
+                        team_week_schedule[game_home][week] = False
+                        team_week_schedule[game_away][week] = False
 
-    # PHASE 3: Schedule intra-division games (most flexible)
-    print("  Phase 3: Scheduling intra-division games...")
-    scheduled_intra_div = 0
+                        # Add to new week
+                        weeks[new_week].append((game_home, game_away))
+                        team_week_schedule[game_home][new_week] = True
+                        team_week_schedule[game_away][new_week] = True
 
-    random.shuffle(intra_division_games)
-
-    for home, away in intra_division_games:
-        if schedule_game(home, away):
-            scheduled_intra_div += 1
-        else:
-            failed_games.append((home, away))
-
-    print(f"    Scheduled {scheduled_intra_div}/{len(intra_division_games)} intra-division games")
-
-    # PHASE 4: Try to rescue failed games with simple rescheduling
-    if failed_games:
-        print(f"  Phase 4: Attempting to reschedule {len(failed_games)} failed games...")
-
-        rescued_games = []
-        for home, away in failed_games[:]:
-            # Try to find any available slot by checking if we can move existing games
-            for week in range(weeks_count):
-                if len(weeks[week]) < 8:  # Week not full
-                    # Check if both teams are available
-                    if not team_week_schedule[home][week] and not team_week_schedule[away][week]:
+                        # Now schedule our target game
                         weeks[week].append((home, away))
                         team_week_schedule[home][week] = True
                         team_week_schedule[away][week] = True
-                        rescued_games.append((home, away))
-                        break
+                        return True
+
+        return False
+
+    # Schedule all games in mixed order to better distribute load
+    all_games_mixed = []
+
+    import random
+    random.shuffle(inter_conference_games)
+    random.shuffle(inter_division_games)
+    random.shuffle(intra_division_games)
+
+    # Interleave game types for better distribution
+    max_len = max(len(inter_conference_games), len(inter_division_games), len(intra_division_games))
+
+    for i in range(max_len):
+        if i < len(inter_conference_games):
+            all_games_mixed.append(("inter-conference", inter_conference_games[i]))
+        if i < len(inter_division_games):
+            all_games_mixed.append(("inter-division", inter_division_games[i]))
+        if i < len(intra_division_games):
+            all_games_mixed.append(("intra-division", intra_division_games[i]))
+
+    # Schedule all games with optimized strategy
+    print("  Using optimized scheduling strategy...")
+    scheduled_count = 0
+
+    for game_type, (home, away) in all_games_mixed:
+        if schedule_game_optimized(home, away):
+            scheduled_count += 1
+        else:
+            failed_games.append((home, away))
+
+    print(f"    Initially scheduled {scheduled_count}/{len(all_matchups)} games")
+
+    # Enhanced rescue phase with game swapping
+    if failed_games:
+        print(f"  Enhanced rescue phase for {len(failed_games)} failed games...")
+
+        rescued_games = []
+        for home, away in failed_games[:]:
+            if force_schedule_with_swapping(home, away):
+                rescued_games.append((home, away))
 
         # Remove rescued games from failed list
         for game in rescued_games:
             failed_games.remove(game)
 
-        print(f"    Rescued {len(rescued_games)} games")
+        print(f"    Rescued {len(rescued_games)} games through swapping")
 
     scheduled_games = len(all_matchups) - len(failed_games)
     print(f"Successfully scheduled: {scheduled_games} out of {len(all_matchups)} games")
