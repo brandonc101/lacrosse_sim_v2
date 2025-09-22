@@ -17,8 +17,11 @@ class SimulationTab:
         self.week_label = ttk.Label(week_info_frame, text="Current Week: 0", font=("Arial", 12, "bold"))
         self.week_label.pack(pady=5)
 
-        self.season_progress = ttk.Progressbar(week_info_frame, length=400, mode='determinate')
+        self.season_progress = ttk.Progressbar(week_info_frame, length=400, mode='determinate', maximum=15)
         self.season_progress.pack(pady=5)
+
+        self.progress_label = ttk.Label(week_info_frame, text="Regular Season: 0/12 weeks", font=("Arial", 10))
+        self.progress_label.pack(pady=2)
 
         # Control buttons
         button_frame = ttk.Frame(sim_frame)
@@ -52,6 +55,7 @@ class SimulationTab:
         # Update displays
         self.week_label.config(text=f"Current Week: {self.main_gui.current_week}")
         self.season_progress['value'] = self.main_gui.current_week
+        self._update_progress_label()
         self.main_gui.update_all_displays()
 
     def simulate_entire_season(self):
@@ -66,6 +70,7 @@ class SimulationTab:
                 week_count = self.main_gui.game_simulator.simulate_entire_season()
                 messagebox.showinfo("Season Complete", f"Season simulation completed in {week_count} weeks!")
                 self.main_gui.update_all_displays()
+                self._update_progress_label()
             except Exception as e:
                 messagebox.showerror("Simulation Error", f"Error during simulation: {str(e)}")
 
@@ -76,5 +81,27 @@ class SimulationTab:
             self.main_gui.game_simulator.reset_season()
             self.week_label.config(text="Current Week: 0")
             self.season_progress['value'] = 0
+            self.progress_label.config(text="Regular Season: 0/12 weeks")
             self.recent_games_text.delete(1.0, tk.END)
             self.main_gui.update_all_displays()
+
+    def _update_progress_label(self):
+        """Update the progress label with detailed season info"""
+        current_week = self.main_gui.current_week
+
+        if current_week <= 12:
+            # Regular season
+            self.progress_label.config(text=f"Regular Season: {current_week}/12 weeks")
+        elif current_week <= 15:
+            # Playoffs
+            playoff_week = current_week - 12
+            self.progress_label.config(text=f"Playoffs: {playoff_week}/3 weeks (Regular season complete)")
+        else:
+            # Offseason
+            self.progress_label.config(text="Season Complete - Offseason")
+
+    def update_display(self):
+        """Update the simulation tab display"""
+        self.week_label.config(text=f"Current Week: {self.main_gui.current_week}")
+        self.season_progress['value'] = self.main_gui.current_week
+        self._update_progress_label()
