@@ -26,10 +26,11 @@ class LeagueConfig:
             "Western South": self.conferences["Western"]["South"]
         }
 
-        # UPDATED for 14-week schedule
+        # UPDATED: Added transition week
         self.regular_season_weeks = 14
+        self.playoff_prep_week = 15  # NEW: Transition week
         self.playoff_weeks = 3
-        self.total_season_weeks = 17
+        self.total_season_weeks = 18  # 14 regular + 1 prep + 3 playoff
 
     def get_team_conference(self, team_name):
         """Get the conference for a team"""

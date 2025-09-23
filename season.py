@@ -48,7 +48,7 @@ def simulate_season(schedule: List[List[tuple]], teams: List[team]) -> None:
         non_goalies.sort(key=lambda x: x[1], reverse=True)
         goalies.sort(key=lambda x: x[1], reverse=True)
 
-        # Print weekly top non-goalies
+        # print weekly top non-goalies
         print("\n-- Weekly Top 3 Non-Goalies --")
         shown_names = set()
         count = 0
@@ -62,7 +62,7 @@ def simulate_season(schedule: List[List[tuple]], teams: List[team]) -> None:
             if count >= 3:
                 break
 
-        # Print weekly top goalies
+        # print weekly top goalies
         print("\n-- Weekly Top 3 Goalies --")
         shown_names = set()
         count = 0

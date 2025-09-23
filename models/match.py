@@ -70,13 +70,151 @@ def team_shooting_accuracy(team: Team) -> float:
     accuracy = base_accuracy * (avg_shooting / 100) * (1.0 - avg_defense / 150)
     return max(0.15, min(accuracy, 0.40))
 
-def simulate_match(home_team: Team, away_team: Team, game_duration_minutes: int = 60) -> MatchResult:
+def simulate_match(home_team: Team, away_team: Team, game_duration_minutes: int = 60, is_playoff: bool = False) -> MatchResult:
+    # Track games played and minutes for all players
+    for player in home_team.players + away_team.players:
+        player.increment_games_played(is_playoff)
+        if player.position == "Goalie":
+            player.add_minutes_played(game_duration_minutes, is_playoff)
+
+    avg_shots = 43
+    home_shots = max(30, int(random.gauss(avg_shots, 5)))
+    away_shots = max(30, int(random.gauss(avg_shots, 5)))
+
+    home_accuracy = team_shooting_accuracy(home_team)
+    away_accuracy = team_shooting_accuracy(away_team)
+
+    home_goals = 0
+    away_goals = 0
+
+    # Reset match stats for players before the match starts
+    for player in home_team.players + away_team.players:
+        player.reset_match_stats()
+
+    # Get goalies for goals against tracking
+    home_goalies = [p for p in home_team.players if p.position == "Goalie"]
+    away_goalies = [p for p in away_team.players if p.position == "Goalie"]
+
+    for _ in range(home_shots):
+        if random.random() < home_accuracy:
+            home_goals += 1
+            scorer = weighted_random_player(home_team.players, ["Attack", "Midfield"])
+            scorer.add_goal(is_playoff)  # FIXED: Pass is_playoff flag
+
+            # Add goal against to opposing goalies
+            for goalie in away_goalies:
+                goalie.add_goal_against(is_playoff)  # FIXED: Pass is_playoff flag
+
+            assister = weighted_random_assister(home_team.players, scorer)
+            if assister:
+                assister.add_assist(is_playoff)  # FIXED: Pass is_playoff flag
+
+    for _ in range(away_shots):
+        if random.random() < away_accuracy:
+            away_goals += 1
+            scorer = weighted_random_player(away_team.players, ["Attack", "Midfield"])
+            scorer.add_goal(is_playoff)  # FIXED: Pass is_playoff flag
+
+            # Add goal against to opposing goalies
+            for goalie in home_goalies:
+                goalie.add_goal_against(is_playoff)  # FIXED: Pass is_playoff flag
+
+            assister = weighted_random_assister(away_team.players, scorer)
+            if assister:
+                assister.add_assist(is_playoff)  # FIXED: Pass is_playoff flag
+
+    home_saves = away_shots - away_goals
+    away_saves = home_shots - home_goals
+
+    def assign_saves(team: Team, saves: int):
+        goalies = [p for p in team.players if p.position == "Goalie"]
+        if not goalies:
+            return
+        weights = [p.defense * (p.stamina / 100) for p in goalies]
+        total = sum(weights)
+        if total == 0:
+            equal_save = saves // len(goalies)
+            for p in goalies:
+                p.add_save(is_playoff)  # FIXED: Pass is_playoff flag
+            return
+        for p, w in zip(goalies, weights):
+            assigned = int(saves * (w / total))
+            for _ in range(assigned):
+                p.add_save(is_playoff)  # FIXED: Pass is_playoff flag
+
+    assign_saves(home_team, home_saves)
+    assign_saves(away_team, away_saves)
+
+    # Only update team record for regular season games
+    if not is_playoff:
+        home_team.goals_for += home_goals
+        home_team.goals_against += away_goals
+        away_team.goals_for += away_goals
+        away_team.goals_against += home_goals
+
+    overtime = False
+
+    if home_goals == away_goals:
+        overtime = True
+        ot_minutes = 0
+
+        while True:
+            ot_minutes += 1
+            for offense_team, defense_team in [(home_team, away_team), (away_team, home_team)]:
+                if random.random() < 0.5:
+                    scorer = weighted_random_player(offense_team.players, ["Attack", "Midfield"])
+                    ot_accuracy = team_shooting_accuracy(offense_team) * 0.8
+                    if random.random() < ot_accuracy:
+                        if offense_team == home_team:
+                            home_goals += 1
+                            for goalie in away_goalies:
+                                goalie.add_goal_against(is_playoff)
+                        else:
+                            away_goals += 1
+                            for goalie in home_goalies:
+                                goalie.add_goal_against(is_playoff)
+
+                        scorer.add_goal(is_playoff)
+
+                        # Add OT minutes to all goalies
+                        for goalie in home_goalies + away_goalies:
+                            goalie.add_minutes_played(ot_minutes, is_playoff)
+
+                        # Only update team wins/losses for regular season
+                        if not is_playoff:
+                            if offense_team == home_team:
+                                home_team.wins += 1
+                                away_team.overtime_losses += 1
+                            else:
+                                away_team.wins += 1
+                                home_team.overtime_losses += 1
+
+                            home_team.points = (home_team.wins * 2) + (home_team.overtime_losses * 1)
+                            away_team.points = (away_team.wins * 2) + (away_team.overtime_losses * 1)
+
+                        return MatchResult(home_team, away_team, home_goals, away_goals,
+                                         home_shots, away_shots, home_saves, away_saves, overtime)
+
+    # No OT, determine win/loss normally (only for regular season)
+    if not overtime and not is_playoff:
+        if home_goals > away_goals:
+            home_team.wins += 1
+            away_team.losses += 1
+        elif away_goals > home_goals:
+            away_team.wins += 1
+            home_team.losses += 1
+
+        home_team.points = (home_team.wins * 2) + (home_team.overtime_losses * 1)
+        away_team.points = (away_team.wins * 2) + (away_team.overtime_losses * 1)
+
+    return MatchResult(home_team, away_team, home_goals, away_goals, home_shots, away_shots, home_saves, away_saves, overtime)
     # NEW: Track games played and minutes for all players
     for player in home_team.players + away_team.players:
-        player.increment_games_played()
+        player.increment_games_played(is_playoff)
+
         # Add minutes played for goalies
         if player.position == "Goalie":
-            player.add_minutes_played(game_duration_minutes)
+            player.add_minutes_played(game_duration_minutes, is_playoff)
 
     avg_shots = 43
     home_shots = max(30, int(random.gauss(avg_shots, 5)))

@@ -29,7 +29,6 @@ class TabManager:
         self.tabs['roster'] = RosterTab(self.notebook, self.main_gui)
         self.tabs['stats'] = StatsTab(self.notebook, self.main_gui)
 
-
         # Store references for backward compatibility
         self.main_gui.simulation_tab = self.tabs['simulation']
         self.main_gui.standings_tab = self.tabs['standings']
@@ -42,7 +41,7 @@ class TabManager:
         if self.playoff_tabs_visible:
             return
 
-        print("Adding playoff tabs...")
+        # print("Adding playoff tabs...")
 
         try:
             from tabs.playoff_bracket_tab import PlayoffBracketTab
@@ -88,7 +87,11 @@ class TabManager:
             if hasattr(tab, 'update_display'):
                 tab.update_display()
 
-        # Update playoff tabs if visible
-        for tab in self.playoff_tabs.values():
-            if hasattr(tab, 'update_display'):
-                tab.update_display()
+        # FIXED: Update playoff tabs if visible
+        if self.playoff_tabs_visible:
+            for tab in self.playoff_tabs.values():
+                if hasattr(tab, 'update_display'):
+                    try:
+                        tab.update_display()
+                    except Exception as e:
+                        print(f"Error updating playoff tab: {e}")

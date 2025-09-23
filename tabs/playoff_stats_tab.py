@@ -11,7 +11,7 @@ class PlayoffStatsTab:
         notebook.add(self.stats_frame, text="Playoff Stats")
 
         # Title
-        title_label = ttk.Label(self.stats_frame, text="📊 PLAYOFF STATISTICS 📊",
+        title_label = ttk.Label(self.stats_frame, text="PLAYOFF STATISTICS",
                                font=("Arial", 16, "bold"))
         title_label.pack(pady=10)
 
@@ -19,36 +19,14 @@ class PlayoffStatsTab:
         self.stats_notebook = ttk.Notebook(self.stats_frame)
         self.stats_notebook.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
 
-        # Team Stats Tab
-        self._setup_team_stats_tab()
-
         # Player Stats Tab
         self._setup_player_stats_tab()
 
+        # Team Stats Tab
+        self._setup_team_stats_tab()
+
         # Game Results Tab
         self._setup_game_results_tab()
-
-    def _setup_team_stats_tab(self):
-        """Setup team playoff statistics tab"""
-        team_frame = ttk.Frame(self.stats_notebook)
-        self.stats_notebook.add(team_frame, text="Team Stats")
-
-        # Team stats treeview
-        columns = ('Team', 'Games', 'Wins', 'Losses', 'Goals For', 'Goals Against', 'Goal Diff')
-        self.team_tree = ttk.Treeview(team_frame, columns=columns, show='headings', height=10)
-
-        # Configure columns
-        for col in columns:
-            self.team_tree.heading(col, text=col)
-            self.team_tree.column(col, width=100, anchor='center')
-
-        # Scrollbar for team stats
-        team_scrollbar = ttk.Scrollbar(team_frame, orient="vertical", command=self.team_tree.yview)
-        self.team_tree.configure(yscrollcommand=team_scrollbar.set)
-
-        # Pack team stats
-        self.team_tree.pack(side="left", fill=tk.BOTH, expand=True)
-        team_scrollbar.pack(side="right", fill="y")
 
     def _setup_player_stats_tab(self):
         """Setup player playoff statistics tab"""
@@ -75,6 +53,28 @@ class PlayoffStatsTab:
         self.player_tree.pack(side="left", fill=tk.BOTH, expand=True)
         player_scrollbar.pack(side="right", fill="y")
 
+    def _setup_team_stats_tab(self):
+        """Setup team playoff statistics tab"""
+        team_frame = ttk.Frame(self.stats_notebook)
+        self.stats_notebook.add(team_frame, text="Team Stats")
+
+        # Team stats treeview
+        columns = ('Team', 'Games', 'Wins', 'Losses', 'Goals For', 'Goals Against', 'Goal Diff')
+        self.team_tree = ttk.Treeview(team_frame, columns=columns, show='headings', height=10)
+
+        # Configure columns
+        for col in columns:
+            self.team_tree.heading(col, text=col)
+            self.team_tree.column(col, width=100, anchor='center')
+
+        # Scrollbar for team stats
+        team_scrollbar = ttk.Scrollbar(team_frame, orient="vertical", command=self.team_tree.yview)
+        self.team_tree.configure(yscrollcommand=team_scrollbar.set)
+
+        # Pack team stats
+        self.team_tree.pack(side="left", fill=tk.BOTH, expand=True)
+        team_scrollbar.pack(side="right", fill="y")
+
     def _setup_game_results_tab(self):
         """Setup playoff game results tab"""
         results_frame = ttk.Frame(self.stats_notebook)
@@ -93,9 +93,41 @@ class PlayoffStatsTab:
 
     def update_display(self):
         """Update all playoff statistics"""
-        self._update_team_stats()
         self._update_player_stats()
+        self._update_team_stats()
         self._update_game_results()
+
+    def _update_player_stats(self):
+        """Update player playoff statistics using SEPARATE playoff stats"""
+        # Clear existing data
+        for item in self.player_tree.get_children():
+            self.player_tree.delete(item)
+
+        if not hasattr(self.main_gui, 'teams') or not self.main_gui.teams:
+            return
+
+        # Get playoff teams and their players with playoff stats
+        playoff_players = []
+        for team in self.main_gui.teams:
+            for player in team.players:
+                if hasattr(player, 'playoff_games_played') and player.playoff_games_played > 0:
+                    playoff_goals = getattr(player, 'playoff_goals', 0)
+                    playoff_assists = getattr(player, 'playoff_assists', 0)
+                    playoff_points = playoff_goals + playoff_assists
+                    playoff_saves = getattr(player, 'playoff_saves', 0)
+
+                    playoff_players.append((
+                        player.name, team.name, player.position,
+                        player.playoff_games_played, playoff_goals,
+                        playoff_assists, playoff_points, playoff_saves
+                    ))
+
+        # Sort by points (goals + assists) for playoffs only
+        playoff_players.sort(key=lambda x: x[6], reverse=True)
+
+        # Insert into treeview
+        for player_info in playoff_players:
+            self.player_tree.insert('', 'end', values=player_info)
 
     def _update_team_stats(self):
         """Update team playoff statistics"""
@@ -104,10 +136,9 @@ class PlayoffStatsTab:
             self.team_tree.delete(item)
 
         if not hasattr(self.main_gui, 'playoff_schedule') or not self.main_gui.playoff_schedule:
-            self.team_tree.insert('', 'end', values=('No playoff games yet', '', '', '', '', '', ''))
             return
 
-        # Calculate team stats from playoff games
+        # Calculate team stats from playoff games only
         team_stats = {}
 
         for game in self.main_gui.playoff_schedule:
@@ -151,50 +182,12 @@ class PlayoffStatsTab:
                 stats['goals_for'], stats['goals_against'], goal_diff_str
             ))
 
-    def _update_player_stats(self):
-        """Update player playoff statistics"""
-        # Clear existing data
-        for item in self.player_tree.get_children():
-            self.player_tree.delete(item)
-
-        if not hasattr(self.main_gui, 'teams') or not self.main_gui.teams:
-            self.player_tree.insert('', 'end', values=('No player data available', '', '', '', '', '', '', ''))
-            return
-
-        # Get playoff teams only
-        playoff_team_names = set()
-        if hasattr(self.main_gui, 'playoff_schedule'):
-            for game in self.main_gui.playoff_schedule:
-                playoff_team_names.add(game.get('home_team', ''))
-                playoff_team_names.add(game.get('away_team', ''))
-
-        # Collect player stats (this would need to be enhanced to track playoff-specific stats)
-        player_data = []
-        for team in self.main_gui.teams:
-            if team.name in playoff_team_names:
-                for player in team.players:
-                    # Note: This shows season stats, not playoff-specific
-                    # You'd need to modify the Player class to track playoff stats separately
-                    points = player.goals + player.assists
-                    player_data.append((
-                        player.name, team.name, player.position,
-                        player.games_played, player.goals, player.assists, points,
-                        getattr(player, 'saves', 0)
-                    ))
-
-        # Sort by points (goals + assists)
-        player_data.sort(key=lambda x: x[6], reverse=True)
-
-        # Insert into treeview
-        for player_info in player_data:
-            self.player_tree.insert('', 'end', values=player_info)
-
     def _update_game_results(self):
         """Update playoff game results"""
         self.results_text.delete(1.0, tk.END)
 
         if not hasattr(self.main_gui, 'playoff_schedule') or not self.main_gui.playoff_schedule:
-            self.results_text.insert(tk.END, "No playoff games scheduled yet.\n\nPlayoff games will begin after the regular season ends (Week 13).")
+            self.results_text.insert(tk.END, "No playoff games scheduled yet.")
             return
 
         results_content = "PLAYOFF GAME RESULTS\n"
@@ -210,12 +203,12 @@ class PlayoffStatsTab:
 
         # Display results by week
         for week in sorted(games_by_week.keys()):
-            if week == 14:
-                results_content += "CONFERENCE SEMIFINALS (Week 14)\n"
-            elif week == 15:
-                results_content += "\nCONFERENCE FINALS (Week 15)\n"
-            elif week == 16:
-                results_content += "\nCHAMPIONSHIP GAME (Week 16)\n"
+            if week == 16:
+                results_content += "CONFERENCE SEMIFINALS (Week 16)\n"
+            elif week == 17:
+                results_content += "\nCONFERENCE FINALS (Week 17)\n"
+            elif week == 18:
+                results_content += "\nCHAMPIONSHIP GAME (Week 18)\n"
 
             results_content += "-" * 30 + "\n"
 

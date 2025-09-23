@@ -17,13 +17,13 @@ class SimulationTab:
         self.week_label = ttk.Label(week_info_frame, text="Current Week: 0", font=("Arial", 12, "bold"))
         self.week_label.pack(pady=5)
 
-        self.season_progress = ttk.Progressbar(week_info_frame, length=400, mode='determinate', maximum=17)
+        self.season_progress = ttk.Progressbar(week_info_frame, length=400, mode='determinate', maximum=18)
         self.season_progress.pack(pady=5)
 
         self.progress_label = ttk.Label(week_info_frame, text="Regular Season: 0/14 weeks", font=("Arial", 10))
         self.progress_label.pack(pady=2)
 
-        # Control buttons
+        # Control buttons (REMOVED reset button)
         button_frame = ttk.Frame(sim_frame)
         button_frame.pack(fill=tk.X, padx=10, pady=10)
 
@@ -35,9 +35,6 @@ class SimulationTab:
                                        command=self.simulate_entire_season)
         self.sim_season_btn.pack(side=tk.LEFT, padx=5)
 
-        self.reset_btn = ttk.Button(button_frame, text="Reset Season", command=self.reset_season)
-        self.reset_btn.pack(side=tk.LEFT, padx=5)
-
         # Recent games display
         recent_frame = ttk.LabelFrame(sim_frame, text="Recent Games", padding=10)
         recent_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
@@ -46,71 +43,101 @@ class SimulationTab:
         self.recent_games_text.pack(fill=tk.BOTH, expand=True)
 
     def simulate_next_week(self):
-        """Simulate the next week of games"""
-        results_text = self.main_gui.game_simulator.simulate_next_week()
-        if results_text:
-            self.recent_games_text.delete(1.0, tk.END)
-            self.recent_games_text.insert(tk.END, results_text)
+        """Simulate the next week of games with proper error handling"""
+        try:
+            # Check if season is complete
+            if hasattr(self.main_gui, 'season_complete') and self.main_gui.season_complete:
+                messagebox.showinfo("Season Complete", "The season has already been completed!")
+                return
 
-        # Check if playoffs just started
-        if self.main_gui.current_week == 15 and hasattr(self.main_gui, 'tab_manager'):
-            self.main_gui.tab_manager.show_playoff_tabs()
+            # Simulate the week
+            results_text = self.main_gui.game_simulator.simulate_next_week()
 
-        # Update displays
-        self.week_label.config(text=f"Current Week: {self.main_gui.current_week}")
-        self.season_progress['value'] = self.main_gui.current_week
-        self._update_progress_label()
-        self.main_gui.update_all_displays()
+            if results_text:
+                self.recent_games_text.delete(1.0, tk.END)
+                self.recent_games_text.insert(tk.END, results_text)
+            else:
+                self.recent_games_text.delete(1.0, tk.END)
+                self.recent_games_text.insert(tk.END, "No games or events this week.")
+
+            # Check if playoff preparation week just happened
+            if (hasattr(self.main_gui, 'current_week') and
+                self.main_gui.current_week == 15 and
+                hasattr(self.main_gui, 'tab_manager')):
+                self.main_gui.tab_manager.show_playoff_tabs()
+
+            # Update all displays
+            self.update_display()
+            if hasattr(self.main_gui, 'update_all_displays'):
+                self.main_gui.update_all_displays()
+
+        except Exception as e:
+            print(f"Error in simulate_next_week: {e}")
+            messagebox.showerror("Simulation Error", f"Error simulating week: {str(e)}")
 
     def simulate_entire_season(self):
-        """Simulate the entire remaining season"""
-        if self.main_gui.season_complete:
-            messagebox.showinfo("Season Complete", "The season has already been completed!")
-            return
+        """Simulate the entire remaining season with error handling"""
+        try:
+            if hasattr(self.main_gui, 'season_complete') and self.main_gui.season_complete:
+                messagebox.showinfo("Season Complete", "The season has already been completed!")
+                return
 
-        result = messagebox.askyesno("Confirm", "Are you sure you want to simulate the entire remaining season?")
-        if result:
-            try:
+            result = messagebox.askyesno("Confirm", "Are you sure you want to simulate the entire remaining season?")
+            if result:
                 week_count = self.main_gui.game_simulator.simulate_entire_season()
                 messagebox.showinfo("Season Complete", f"Season simulation completed in {week_count} weeks!")
-                self.main_gui.update_all_displays()
-                self._update_progress_label()
-            except Exception as e:
-                messagebox.showerror("Simulation Error", f"Error during simulation: {str(e)}")
 
-    def reset_season(self):
-        """Reset the season to the beginning"""
-        result = messagebox.askyesno("Confirm Reset", "Are you sure you want to reset the season? All progress will be lost.")
-        if result:
-            self.main_gui.game_simulator.reset_season()
-            self.week_label.config(text="Current Week: 0")
-            self.season_progress['value'] = 0
-            self.progress_label.config(text="Regular Season: 0/14 weeks")
-            self.recent_games_text.delete(1.0, tk.END)
+                # Update displays
+                self.update_display()
+                if hasattr(self.main_gui, 'update_all_displays'):
+                    self.main_gui.update_all_displays()
 
-            # Hide playoff tabs
-            if hasattr(self.main_gui, 'tab_manager'):
-                self.main_gui.tab_manager.hide_playoff_tabs()
-
-            self.main_gui.update_all_displays()
+        except Exception as e:
+            print(f"Error in simulate_entire_season: {e}")
+            messagebox.showerror("Simulation Error", f"Error during season simulation: {str(e)}")
 
     def _update_progress_label(self):
         """Update the progress label with detailed season info"""
-        current_week = self.main_gui.current_week
+        try:
+            if not hasattr(self.main_gui, 'current_week'):
+                self.progress_label.config(text="Regular Season: 0/14 weeks")
+                return
 
-        if current_week <= 14:
-            # Regular season
-            self.progress_label.config(text=f"Regular Season: {current_week}/14 weeks")
-        elif current_week <= 17:
-            # Playoffs
-            playoff_week = current_week - 14
-            self.progress_label.config(text=f"Playoffs: {playoff_week}/3 weeks (Regular season complete)")
-        else:
-            # Offseason
-            self.progress_label.config(text="Season Complete - Offseason")
+            current_week = self.main_gui.current_week
+
+            if current_week <= 14:
+                # Regular season
+                self.progress_label.config(text=f"Regular Season: {current_week}/14 weeks")
+            elif current_week == 15:
+                # Playoff preparation
+                self.progress_label.config(text="Playoff Preparation Week - Brackets Set")
+            elif current_week <= 18:
+                # Playoffs
+                playoff_week = current_week - 15
+                self.progress_label.config(text=f"Playoffs: {playoff_week}/3 weeks")
+            else:
+                # Offseason
+                self.progress_label.config(text="Season Complete - Offseason")
+
+        except Exception as e:
+            print(f"Error updating progress label: {e}")
+            self.progress_label.config(text="Progress unavailable")
 
     def update_display(self):
-        """Update the simulation tab display"""
-        self.week_label.config(text=f"Current Week: {self.main_gui.current_week}")
-        self.season_progress['value'] = self.main_gui.current_week
-        self._update_progress_label()
+        """Update the simulation tab display with error handling"""
+        try:
+            # Update week label
+            if hasattr(self.main_gui, 'current_week'):
+                self.week_label.config(text=f"Current Week: {self.main_gui.current_week}")
+                self.season_progress['value'] = self.main_gui.current_week
+            else:
+                self.week_label.config(text="Current Week: 0")
+                self.season_progress['value'] = 0
+
+            # Update progress label
+            self._update_progress_label()
+
+        except Exception as e:
+            print(f"Error updating simulation display: {e}")
+            self.week_label.config(text="Current Week: Error")
+            self.progress_label.config(text="Error updating display")

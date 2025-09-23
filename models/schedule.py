@@ -6,8 +6,6 @@ def schedule_games_efficiently(all_matchups, team_names, weeks_count=14):
     """
     Enhanced scheduling algorithm with better week utilization
     """
-    print(f"\nScheduling {len(all_matchups)} games across {weeks_count} weeks...")
-
     # Initialize data structures
     weeks = [[] for _ in range(weeks_count)]
     team_week_schedule = {team: [False] * weeks_count for team in team_names}
@@ -54,8 +52,6 @@ def schedule_games_efficiently(all_matchups, team_names, weeks_count=14):
             inter_division_games.append((home, away))
         else:
             inter_conference_games.append((home, away))
-
-    print(f"  Categorized: {len(intra_division_games)} intra-division, {len(inter_division_games)} inter-division, {len(inter_conference_games)} inter-conference")
 
     def get_available_weeks(team1, team2):
         """Get weeks where both teams are available"""
@@ -170,7 +166,6 @@ def schedule_games_efficiently(all_matchups, team_names, weeks_count=14):
             all_games_mixed.append(("intra-division", intra_division_games[i]))
 
     # Schedule all games with optimized strategy
-    print("  Using optimized scheduling strategy...")
     scheduled_count = 0
 
     for game_type, (home, away) in all_games_mixed:
@@ -179,12 +174,8 @@ def schedule_games_efficiently(all_matchups, team_names, weeks_count=14):
         else:
             failed_games.append((home, away))
 
-    print(f"    Initially scheduled {scheduled_count}/{len(all_matchups)} games")
-
     # Enhanced rescue phase with game swapping
     if failed_games:
-        print(f"  Enhanced rescue phase for {len(failed_games)} failed games...")
-
         rescued_games = []
         for home, away in failed_games[:]:
             if force_schedule_with_swapping(home, away):
@@ -194,13 +185,10 @@ def schedule_games_efficiently(all_matchups, team_names, weeks_count=14):
         for game in rescued_games:
             failed_games.remove(game)
 
-        print(f"    Rescued {len(rescued_games)} games through swapping")
-
     scheduled_games = len(all_matchups) - len(failed_games)
-    print(f"Successfully scheduled: {scheduled_games} out of {len(all_matchups)} games")
 
     if failed_games:
-        print(f"Failed to schedule {len(failed_games)} games:")
+        print(f"ERROR: Failed to schedule {len(failed_games)} games:")
         for home, away in failed_games[:5]:  # Show first 5 only
             print(f"  {home} vs {away}")
         if len(failed_games) > 5:
@@ -264,15 +252,10 @@ def build_season_schedule(teams, start_date="2025-06-01"):
             conf, div = team_divisions[team_name]
             divisions[f"{conf}_{div}"].append(team_name)
 
-    print("Team organization:")
-    for div_name, div_teams in divisions.items():
-        print(f"  {div_name}: {div_teams}")
-
     # Generate all matchups
     all_matchups = []
 
     # 1. Intra-division games (6 games per team)
-    print("\nGenerating intra-division games...")
     intra_division_total = 0
 
     for div_name, div_teams in divisions.items():
@@ -285,13 +268,7 @@ def build_season_schedule(teams, start_date="2025-06-01"):
                     all_matchups.append((div_teams[j], div_teams[i]))  # j home vs i away
                     intra_division_total += 2
 
-            # Each team plays 3 opponents × 2 games each = 6 games per team
-            print(f"  {div_name}: Added 12 intra-division games (6 per team)")
-
-    print(f"Total intra-division games: {intra_division_total}")
-
     # 2. Inter-division within conference (4 games per team)
-    print("\nGenerating inter-division conference games...")
     inter_division_total = 0
 
     # Eastern Conference: North vs South
@@ -312,10 +289,7 @@ def build_season_schedule(teams, start_date="2025-06-01"):
             all_matchups.append((team1, team2))
             inter_division_total += 1
 
-    print(f"Total inter-division games: {inter_division_total}")
-
     # 3. Inter-conference games (2 games per team)
-    print("\nGenerating inter-conference games...")
     inter_conference_total = 0
 
     # Create a rotation for inter-conference matchups
@@ -339,26 +313,19 @@ def build_season_schedule(teams, start_date="2025-06-01"):
         all_matchups.append(matchup)
         inter_conference_total += 1
 
-    print(f"Total inter-conference games: {inter_conference_total}")
-    print(f"Each team plays 2 inter-conference opponents")
-
     # Verify matchup count
     team_game_count = {}
     for home, away in all_matchups:
         team_game_count[home] = team_game_count.get(home, 0) + 1
         team_game_count[away] = team_game_count.get(away, 0) + 1
 
-    print(f"\nMatchup verification:")
-    print(f"Total matchups generated: {len(all_matchups)} (should be 96)")
-
+    # Check for errors in matchup generation
     all_teams_correct = True
     for team in sorted(team_names):
         count = team_game_count.get(team, 0)
         if count != 12:
-            print(f"  ERROR: {team} has {count} games instead of 12!")
+            print(f"ERROR: {team} has {count} games instead of 12!")
             all_teams_correct = False
-        else:
-            print(f"  {team}: {count} games ✓")
 
     if not all_teams_correct:
         print("ERROR: Matchup generation failed!")
@@ -389,32 +356,16 @@ def build_season_schedule(teams, start_date="2025-06-01"):
         final_team_count[home] = final_team_count.get(home, 0) + 1
         final_team_count[away] = final_team_count.get(away, 0) + 1
 
-    print(f"\nFinal schedule: {len(schedule)} total games across 14 weeks")
-    print(f"Games per week: {[len(week) for week in weeks]}")
-
-    # Calculate bye weeks for each team
-    print(f"\nBye week analysis:")
-    for team in sorted(team_names):
-        bye_weeks = []
-        for week in range(14):
-            if not team_week_schedule[team][week]:
-                bye_weeks.append(week + 1)
-        print(f"  {team}: {len(bye_weeks)} bye weeks {bye_weeks}")
-
-    print(f"\nFinal verification:")
+    # Check for errors in final schedule
     all_correct = True
     for team in sorted(team_names):
         count = final_team_count.get(team, 0)
         if count != 12:
-            print(f"  ERROR: {team} has {count} games (should be 12)")
+            print(f"ERROR: {team} has {count} games (should be 12)")
             all_correct = False
-        else:
-            print(f"  {team}: {count} games ✓")
 
-    if all_correct:
-        print("\nSUCCESS: All teams have exactly 12 games with 2 bye weeks each!")
-    else:
-        print("\nERROR: Schedule generation failed!")
+    if not all_correct:
+        print("ERROR: Schedule generation failed!")
 
     return schedule
 
@@ -432,13 +383,5 @@ def verify_schedule_balance(schedule):
         team_games[away] = team_games.get(away, 0) + 1
         team_home_games[home] = team_home_games.get(home, 0) + 1
         team_away_games[away] = team_away_games.get(away, 0) + 1
-
-    print("\nDetailed Schedule Verification:")
-    print("=" * 50)
-    for team in sorted(team_games.keys()):
-        total = team_games.get(team, 0)
-        home = team_home_games.get(team, 0)
-        away = team_away_games.get(team, 0)
-        print(f"{team}: {total} total ({home} home, {away} away)")
 
     return team_games

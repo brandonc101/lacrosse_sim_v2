@@ -11,7 +11,7 @@ class ScheduleManager:
             temp_teams = self._create_temp_teams()
             schedule_data = build_season_schedule(temp_teams)
             self._add_missing_fields(schedule_data)
-            print(f"Generated schedule with {len(schedule_data)} games")
+            # print(f"Generated schedule with {len(schedule_data)} games")
             return schedule_data
 
         except ImportError:
